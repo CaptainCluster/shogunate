@@ -1,20 +1,18 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Tech stack: TypeScript, React, Vite, Spring Boot 4.1, Java 21, Postgresql, Gradle
+  Package manager: pnpm
+  Cross-platform requirements:
+  - This application runs on macOS, Linux, AND Windows
+  - Always use path.join() or path.resolve() for file paths
+  - Never assume forward-slash path separators
+  - Tests must use path.join() for expected path values, not hardcoded strings
+  - Consider case sensitivity differences in file systems
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - Keep proposals under 500 words
+    - Always include a "Non-goals" section
+  tasks:
+    - Break tasks into chunks of max 2 hours

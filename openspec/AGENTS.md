@@ -22,6 +22,7 @@ Don't improvise scope or structure that contradicts `openspec/specs/` or the doc
 /docs           → PRD.md, ARCHITECTURE.md (implementation detail), TASKS.md (historical reference)
 /backend        → Spring Boot + Gradle (Java)
 /frontend       → React + TypeScript + pnpm
+/scripts        → local dev helpers (e.g. test data seeding)
 docker-compose.yml → local Postgres only, for local dev
 ```
 
@@ -35,6 +36,20 @@ docker-compose.yml → local Postgres only, for local dev
 ```
 docker-compose up -d      # starts Postgres for local dev
 ```
+
+### Local test data
+After Postgres is running, seed a verified dev account (idempotent; safe to re-run):
+
+```
+./scripts/populate_test_data.sh
+```
+
+Default credentials:
+
+- Email: `firstmock.lastmock@local.test`
+- Password: `TestPassword123!`
+
+The script uses the auth API when the backend is up; otherwise it inserts directly into Postgres. Extend `scripts/populate_test_data.sh` when new domains need local fixtures (shows, watch history, etc.).
 
 ### Backend (`/backend`)
 ```

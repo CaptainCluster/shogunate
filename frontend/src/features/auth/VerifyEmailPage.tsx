@@ -1,12 +1,15 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import * as authApi from '../../api/authApi'
-import { getErrorMessage } from '../../hooks/useAuth'
+import { getErrorMessage } from '../../lib/getErrorMessage'
+import { useResendVerification } from './hooks/useResendVerification'
+import { useVerifyEmail } from './hooks/useVerifyEmail'
 import './auth.css'
 
 export function VerifyEmailPage() {
   const [searchParams] = useSearchParams()
+  const verifyMutation = useVerifyEmail()
+  const resendMutation = useResendVerification()
   const [email, setEmail] = useState(searchParams.get('email') ?? '')
   const [token, setToken] = useState(searchParams.get('token') ?? '')
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +20,7 @@ export function VerifyEmailPage() {
     setError(null)
     setMessage(null)
     try {
-      const response = await authApi.verifyEmail(token)
+      const response = await verifyMutation.mutateAsync(token)
       setMessage(response.message)
     } catch (err) {
       setError(getErrorMessage(err, 'Verification failed'))
@@ -29,7 +32,7 @@ export function VerifyEmailPage() {
     setError(null)
     setMessage(null)
     try {
-      const response = await authApi.resendVerification(email)
+      const response = await resendMutation.mutateAsync(email)
       setMessage(response.message)
     } catch (err) {
       setError(getErrorMessage(err, 'Could not resend verification email'))
@@ -49,7 +52,9 @@ export function VerifyEmailPage() {
             required
           />
         </label>
-        <button type="submit">Verify email</button>
+        <button type="submit" disabled={verifyMutation.isPending}>
+          Verify email
+        </button>
       </form>
       <form className="auth-form" onSubmit={handleResend}>
         <label>
@@ -61,7 +66,9 @@ export function VerifyEmailPage() {
             required
           />
         </label>
-        <button type="submit">Resend verification</button>
+        <button type="submit" disabled={resendMutation.isPending}>
+          Resend verification
+        </button>
       </form>
       {error && <p className="auth-error">{error}</p>}
       {message && <p className="auth-message">{message}</p>}

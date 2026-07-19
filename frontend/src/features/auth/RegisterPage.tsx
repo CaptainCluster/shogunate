@@ -1,12 +1,13 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import * as authApi from '../../api/authApi'
-import { getErrorMessage } from '../../hooks/useAuth'
+import { getErrorMessage } from '../../lib/getErrorMessage'
+import { useRegister } from './hooks/useRegister'
 import './auth.css'
 
 export function RegisterPage() {
   const navigate = useNavigate()
+  const registerMutation = useRegister()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -17,7 +18,7 @@ export function RegisterPage() {
     setError(null)
     setMessage(null)
     try {
-      const response = await authApi.register(email, password)
+      const response = await registerMutation.mutateAsync({ email, password })
       setMessage(response.message)
       navigate(`/verify-email?email=${encodeURIComponent(email)}`)
     } catch (err) {
@@ -50,7 +51,9 @@ export function RegisterPage() {
         </label>
         {error && <p className="auth-error">{error}</p>}
         {message && <p className="auth-message">{message}</p>}
-        <button type="submit">Register</button>
+        <button type="submit" disabled={registerMutation.isPending}>
+          Register
+        </button>
       </form>
       <div className="auth-links">
         <Link to="/login">Already have an account? Log in</Link>

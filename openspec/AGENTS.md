@@ -98,6 +98,7 @@ These encode rules from the PRD/Architecture that are easy to accidentally viola
 - **Rating precision is 0.5 increments between 0.5 and 5.0.** Validate this both client- and server-side.
 - **No cross-user visibility, ever.** There are no social features. Don't add any endpoint, query, or UI element that exposes one user's data to another, even read-only, even for "leaderboard"-style features that might seem harmless.
 - **TMDb is called only from `show/tmdb/TmdbClient`.** No other class should call out to TMDb directly. Search results are never persisted — only an explicit "add to library" action writes a snapshot.
+- **Frontend server state uses TanStack Query only.** All data from `api/*.ts` MUST be consumed via `useQuery`/`useMutation` hooks in `features/<feature>/hooks/`. Do not call `api/*` from pages or components directly, and do not store server responses in `useState`/`useEffect`. Form and UI-only state (inputs, modals) may use `useState`. JWT token persistence in `localStorage` is client session plumbing, not server state.
 
 ---
 

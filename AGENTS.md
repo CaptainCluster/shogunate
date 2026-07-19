@@ -1,81 +1,110 @@
 # AGENTS.md
 
-Guidance for AI coding agents working in this repository.
+Instructions for AI coding agents (e.g. Claude Code) working in this repository. Humans are welcome to read this too, but its primary audience is an agent about to make changes here.
 
-## Project Overview
+Before doing anything else, read `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/TASKS.md`. This repo is being built spec-driven: PRD defines *what*, ARCHITECTURE defines *how it's structured*, TASKS.md defines *what to do next and in what order*. Don't improvise scope or structure that contradicts those documents — if something seems missing or contradictory, flag it instead of guessing (see "When Something Is Ambiguous" below).
 
-- **Backend**: Java, Spring Boot
-- **Frontend**: React, TypeScript
-- **Database**: PostgreSQL
+---
 
-Update the paths below to match your actual repo layout.
+## 1. Repository Layout
 
 ```
-/backend    -> Spring Boot application (Java, Gradle)
-/frontend   -> React + TypeScript application
+/docs           → PRD.md, ARCHITECTURE.md, TASKS.md (read these first)
+/backend        → Spring Boot + Gradle (Java)
+/frontend       → React + TypeScript + pnpm
+docker-compose.yml → local Postgres only, for local dev
 ```
 
-## Setup Commands
+`/backend` and `/frontend` build and run independently. There is no root-level build orchestration (no Nx/Turborepo) — run commands from within each directory.
 
-### Backend
-```bash
-cd backend
-./gradlew build
-./gradlew bootRun
+---
+
+## 2. Setup & Common Commands
+
+### Local database
+```
+docker-compose up -d      # starts Postgres for local dev
 ```
 
-### Frontend
-```bash
-cd frontend
+### Backend (`/backend`)
+```
+./gradlew build           # build + run tests
+./gradlew test             # tests only
+./gradlew bootRun          # run the app locally
+./gradlew spotlessApply    # auto-format code
+./gradlew checkstyleMain checkstyleTest   # lint check
+```
+Run `spotlessApply` before finishing any backend change. Run `checkstyleMain`/`checkstyleTest` and resolve violations before considering a task done — don't leave lint failures for later.
+
+### Frontend (`/frontend`)
+```
 pnpm install
-pnpm dev
+pnpm dev                  # local dev server
+pnpm build                # production build
+pnpm test                 # unit/integration tests (Vitest)
+pnpm lint                 # ESLint
+pnpm format               # Prettier
+```
+Run `pnpm lint` and `pnpm format` before finishing any frontend change, same rule as backend.
+
+---
+
+## 3. Code Conventions
+
+### Backend — feature-based packages
+Each feature (`auth/`, `show/`, `watch/`, `review/`, `favorite/`, `analytics/`) is a full vertical slice: its own controller, service, repository, entity, and DTOs. **Do not** split new code across layered top-level folders (no top-level `controllers/`, `services/`, etc.) — a new feature gets its own package containing everything it needs. Shared code only goes in `common/` or `config/` (see `ARCHITECTURE.md` §2.1 for the exact layout).
+
+### Frontend — mirror the backend features
+`frontend/src/features/<feature>/` mirrors the backend feature it talks to. API calls live in `frontend/src/api/<feature>Api.ts`. Server state is managed exclusively through TanStack Query — do not introduce Redux, Zustand, or manual fetch+useState for anything that is server data. Local/UI-only state (form fields, modal visibility) uses plain `useState`.
+
+Query key convention: namespace by feature and target, e.g. `['shows', userId]`, `['watch-status', targetType, targetId]`. When a mutation can trigger a cascade (see below), invalidate every query key that could be affected — not just the one directly mutated.
+
+---
+
+## 4. Non-Negotiable Constraints
+
+These encode rules from the PRD/Architecture that are easy to accidentally violate. Do not deviate from these without explicit human confirmation:
+
+- **Per-user data isolation is enforced in the service/repository layer, not just the UI.** Every query touching `shows`, `seasons`, `episodes`, `reviews`, `watch_events`, or `favorites` must be scoped to the authenticated user resolved from the JWT — never trust a user ID from the request body/path.
+- **`watch_events` is append-only.** Never add an UPDATE or DELETE operation against this table, in the repository layer or anywhere else.
+- **Cascade operations are one atomic transaction.** Marking or unmarking a season/show watched must update all descendant rows and write all corresponding `watch_events` rows inside a single transaction — no partial cascades.
+- **Season/show-level unmark requires an explicit `confirm=true`.** Reject the request with `400` if it's missing — don't silently proceed or silently default it to true.
+- **No rating roll-up.** Episode, season, and show ratings/reviews are fully independent. Never compute or cache a show's rating from its seasons' or episodes' ratings, or vice versa.
+- **Rating precision is 0.5 increments between 0.5 and 5.0.** Validate this both client- and server-side.
+- **No cross-user visibility, ever.** There are no social features. Don't add any endpoint, query, or UI element that exposes one user's data to another, even read-only, even for "leaderboard"-style features that might seem harmless.
+- **TMDb is called only from `show/tmdb/TmdbClient`.** No other class should call out to TMDb directly. Search results are never persisted — only an explicit "add to library" action writes a snapshot.
+
+---
+
+## 5. Task Tracking
+
+`docs/TASKS.md` is a live checklist, not just a static reference. When you complete a task:
+1. Verify it against its stated acceptance criteria before marking it done.
+2. Check its box in `docs/TASKS.md` (`- [ ]` → `- [x]`) in the same change/commit that completes it.
+3. If a task turns out to need something not covered in PRD/ARCHITECTURE (see below), resolve or flag that *before* checking the box — don't check it off with an undocumented gap.
+
+---
+
+## 6. Commit Conventions
+
+Use Conventional Commits, with the relevant `TASKS.md` task ID in brackets at the end of the subject line:
+
+```
+feat(watch): cascade mark-watched logic [3.2]
+fix(auth): reject login for unverified users [1.2]
+test(analytics): cover longest-to-watch edge cases [6.5]
+chore(setup): add docker-compose for local postgres [0.2]
 ```
 
-## Code Style
+Use the standard types (`feat`, `fix`, `refactor`, `test`, `chore`, `docs`) and the feature name as scope (matching the package/folder name, e.g. `auth`, `show`, `watch`, `review`, `favorite`, `analytics`). If a change touches multiple tasks, list multiple IDs: `[3.2, 3.4]`.
 
-### Backend (Java / Spring Boot)
-- Follow standard Java naming conventions (PascalCase classes, camelCase methods/vars).
-- Package by feature (e.g. `com.company.app.user`), not by layer, unless the existing codebase already uses a layer-first structure — match what's there.
-- Use constructor injection for dependencies, not field injection (`@Resource` on fields).
-- Keep controllers thin: validation and request/response mapping only. Business logic belongs in services.
-- Use DTOs for API request/response bodies; do not expose JPA entities directly over the wire.
+---
 
-### Frontend (React / TypeScript)
-- Strict TypeScript: avoid `any`; prefer explicit types/interfaces for props and API responses.
-- Functional components with hooks; no class components.
-- Co-locate component, styles, and tests (e.g. `Button.tsx`, `Button.test.tsx`).
-- Keep API calls in a dedicated `services/` or `api/` layer, not inline in components.
-- Prefer named exports over default exports for consistency (adjust if the repo already uses default exports).
+## 7. When Something Is Ambiguous
 
-### Database (PostgreSQL)
-- All schema changes go through migrations (e.g. Flyway) — never edit the schema by hand in production.
-- Migration files are append-only: don't edit a migration that has already been applied/merged; add a new one.
-- Use snake_case for table and column names.
+Three assumptions are already flagged as open in `docs/PRD.md` §9 and carried into `docs/ARCHITECTURE.md` §9 — don't silently resolve these yourself if you hit them (e.g. while implementing Tasks 2.4/2.5):
+1. Whether "Plan to Watch" applies only at the show level.
+2. Whether show metadata is a one-time snapshot vs. kept live-synced with TMDb.
+3. Exact cascade-delete behavior when a show is removed from a library.
 
-
-
-## Pull Request / Commit Guidelines
-
-- Keep commits focused; one logical change per commit.
-- Write commit messages in imperative mood (e.g. "Add user repository", not "Added" or "Adding").
-- Reference the relevant ticket/issue number if applicable.
-- Do not commit `.env` files, secrets, or local `application-local.yml` overrides.
-
-## Security & Config Notes
-
-- Secrets (DB credentials, API keys, JWT secrets) come from environment variables or a secrets manager — never hardcoded, never committed.
-- CORS configuration for the frontend-backend connection lives in the backend's `WebConfig`/`SecurityConfig` — update there, not by disabling CORS checks in the browser or proxying around it.
-- Validate all input at the API boundary (Spring `@Valid` / Bean Validation on DTOs).
-
-## Things Agents Should NOT Do
-
-- Don't modify already-applied database migrations — add a new migration instead.
-- Don't add new dependencies (Maven/Gradle or npm) without checking for an existing equivalent already in use.
-- Don't bypass the DTO layer to expose JPA entities directly in API responses.
-- Don't disable TypeScript strict mode or add blanket `// @ts-ignore` to silence errors — fix the underlying type issue.
-- Don't run destructive database commands against anything other than a local/dev database.
-
-## Notes for Agents
-
-- If a section above doesn't match reality (e.g. you use Gradle not Maven, or Flyway not Liquibase), correct this file rather than guessing silently in future changes — this file should stay accurate.
-- Prefer editing existing files/patterns over introducing new ones; match the conventions already present in the surrounding code even where they differ from the defaults above.
+For these, and for anything else not fully specified in PRD/ARCHITECTURE/TASKS: stop and ask, rather than picking a default and moving on. A wrong guess here tends to compound across several tasks before anyone notices.

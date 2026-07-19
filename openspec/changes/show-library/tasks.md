@@ -19,6 +19,7 @@
 - [ ] 4.1 Add showApi.ts
 - [ ] 4.2 Add search page and library list
 - [ ] 4.3 Add show detail page with seasons/episodes
+- [ ] 4.4 Add About/Credits section with TMDB logo and required attribution notice
 
 ## 5. Verification
 

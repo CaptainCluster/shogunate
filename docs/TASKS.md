@@ -36,36 +36,29 @@ Checkboxes are for tracking progress as work is completed.
 
 ## Phase 1: Authentication
 
-- [ ] **1.1 — `users`, email verification & password reset tables (migration)**
-  *Ref: Architecture §3 (users, and the two token tables)*
+> Revised by the `username-auth` OpenSpec change: auth uses username + password only (no email verification or password reset).
 
-- [ ] **1.2 — Register + login (backend)**
-  `AuthController`, `AuthService`, `UserRepository`. Password hashing (bcrypt/Argon2). JWT issuance on login.
-  *Acceptance:* `POST /api/auth/register` creates an unverified user; `POST /api/auth/login` fails for unverified users; succeeds and returns a JWT for verified ones.
+- [x] **1.1 — `users` table (migration)**
+  Flyway migration for `users` with `username` (unique, case-insensitive lookup).
+  *Ref: Architecture §3*
+
+- [x] **1.2 — Register + login (backend)**
+  `AuthController`, `AuthService`, `UserRepository`. Password hashing (bcrypt). JWT issuance on login.
+  *Acceptance:* `POST /api/auth/register` creates a user; `POST /api/auth/login` returns a JWT for valid credentials.
   *Ref: PRD §5.1; Architecture §2.1, §8.1*
 
-- [ ] **1.3 — Email verification flow (backend)**
-  Token generation + `POST /api/auth/verify-email`, `POST /api/auth/resend-verification`. (Actual email sending can be stubbed/logged for local dev.)
-  *Acceptance:* A newly registered user cannot log in until their verification token is redeemed.
-  *Ref: PRD §5.1*
-
-- [ ] **1.4 — Password reset flow (backend)**
-  `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`.
-  *Acceptance:* Requesting reset issues a time-limited token; redeeming it updates the password hash and invalidates the token.
-  *Ref: PRD §5.1*
-
-- [ ] **1.5 — JWT auth filter + `CurrentUserResolver` (backend)**
+- [x] **1.3 — JWT auth filter + `CurrentUserResolver` (backend)**
   Every authenticated endpoint resolves the current user from the token; no endpoint accepts a client-supplied user ID.
   *Acceptance:* Requests without a valid token return `401`; a manually-crafted request with someone else's ID in the body/path still only ever operates on the token's user.
   *Ref: Architecture §8.1*
 
-- [ ] **1.6 — Auth UI (frontend)**
-  Register, login, verify-email, forgot/reset-password pages + `authApi.ts` + `useAuth` hook.
-  *Acceptance:* Full signup → verify → login → reset-password flow works end-to-end against the local backend.
+- [x] **1.4 — Auth UI (frontend)**
+  Register and login pages + `authApi.ts` + `useAuth` hook.
+  *Acceptance:* Register → login flow works end-to-end against the local backend.
   *Ref: Architecture §7.1*
 
-- [ ] **1.7 — Tests**
-  Unit tests for `AuthService` (hashing, token expiry logic). Integration tests for all `/api/auth/*` endpoints.
+- [x] **1.5 — Tests**
+  Unit tests for `AuthService`. Integration tests for register/login and `/api/me`.
   *Ref: Architecture §8.3*
 
 ---

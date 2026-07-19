@@ -10,8 +10,8 @@ export function useAuth() {
   return {
     user: user ?? null,
     isLoading,
-    login: async (email: string, password: string) => {
-      await loginMutation.mutateAsync({ email, password })
+    login: async (username: string, password: string) => {
+      await loginMutation.mutateAsync({ username, password })
     },
     logout,
   }

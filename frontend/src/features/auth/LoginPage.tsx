@@ -7,7 +7,7 @@ import './auth.css'
 
 export function LoginPage() {
   const loginMutation = useLogin()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -15,7 +15,7 @@ export function LoginPage() {
     event.preventDefault()
     setError(null)
     try {
-      await loginMutation.mutateAsync({ email, password })
+      await loginMutation.mutateAsync({ username, password })
     } catch (err) {
       setError(getErrorMessage(err, 'Login failed'))
     }
@@ -26,11 +26,14 @@ export function LoginPage() {
       <h1>Log in</h1>
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
-          Email
+          Username
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            minLength={3}
+            maxLength={32}
+            pattern="[a-zA-Z0-9_]+"
             required
           />
         </label>
@@ -50,7 +53,6 @@ export function LoginPage() {
       </form>
       <div className="auth-links">
         <Link to="/register">Create an account</Link>
-        <Link to="/forgot-password">Forgot password?</Link>
       </div>
     </section>
   )

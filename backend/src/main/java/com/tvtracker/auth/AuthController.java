@@ -1,12 +1,9 @@
 package com.tvtracker.auth;
 
 import com.tvtracker.auth.dto.AuthResponse;
-import com.tvtracker.auth.dto.EmailRequest;
 import com.tvtracker.auth.dto.LoginRequest;
 import com.tvtracker.auth.dto.MessageResponse;
 import com.tvtracker.auth.dto.RegisterRequest;
-import com.tvtracker.auth.dto.ResetPasswordRequest;
-import com.tvtracker.auth.dto.TokenRequest;
 import com.tvtracker.auth.dto.UserResponse;
 import com.tvtracker.common.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,41 +33,13 @@ public class AuthController {
     @Operation(summary = "Register a new user")
     public MessageResponse register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request);
-        return new MessageResponse("Registration successful. Check your email to verify your account.");
+        return new MessageResponse("Registration successful. You can now log in.");
     }
 
     @PostMapping("/login")
-    @Operation(summary = "Log in with email and password")
+    @Operation(summary = "Log in with username and password")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
-    }
-
-    @PostMapping("/verify-email")
-    @Operation(summary = "Verify email with token")
-    public MessageResponse verifyEmail(@Valid @RequestBody TokenRequest request) {
-        authService.verifyEmail(request.token());
-        return new MessageResponse("Email verified successfully");
-    }
-
-    @PostMapping("/resend-verification")
-    @Operation(summary = "Resend email verification")
-    public MessageResponse resendVerification(@Valid @RequestBody EmailRequest request) {
-        authService.resendVerification(request.email());
-        return new MessageResponse("Verification email sent");
-    }
-
-    @PostMapping("/forgot-password")
-    @Operation(summary = "Request password reset")
-    public MessageResponse forgotPassword(@Valid @RequestBody EmailRequest request) {
-        authService.forgotPassword(request.email());
-        return new MessageResponse("If an account exists, a reset email has been sent");
-    }
-
-    @PostMapping("/reset-password")
-    @Operation(summary = "Reset password with token")
-    public MessageResponse resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
-        authService.resetPassword(request);
-        return new MessageResponse("Password reset successfully");
     }
 }
 

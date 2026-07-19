@@ -3,7 +3,7 @@ import { register } from '../../../api/authApi'
 
 export function useRegister() {
   return useMutation({
-    mutationFn: ({ email, password }: { email: string; password: string }) =>
-      register(email, password),
+    mutationFn: ({ username, password }: { username: string; password: string }) =>
+      register(username, password),
   })
 }

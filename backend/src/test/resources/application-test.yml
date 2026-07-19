@@ -9,7 +9,3 @@ spring:
 jwt:
   secret: test-secret-key-minimum-32-characters-long
   expiration-ms: 3600000
-
-auth:
-  verification-token-expiration-hours: 24
-  password-reset-token-expiration-hours: 1

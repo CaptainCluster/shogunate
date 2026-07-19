@@ -17,7 +17,3 @@ server:
 jwt:
   secret: local-dev-secret-change-in-production-min-32-chars
   expiration-ms: 86400000
-
-auth:
-  verification-token-expiration-hours: 24
-  password-reset-token-expiration-hours: 1

@@ -8,19 +8,16 @@ import './auth.css'
 export function RegisterPage() {
   const navigate = useNavigate()
   const registerMutation = useRegister()
-  const [email, setEmail] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [message, setMessage] = useState<string | null>(null)
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
     setError(null)
-    setMessage(null)
     try {
-      const response = await registerMutation.mutateAsync({ email, password })
-      setMessage(response.message)
-      navigate(`/verify-email?email=${encodeURIComponent(email)}`)
+      await registerMutation.mutateAsync({ username, password })
+      navigate('/login')
     } catch (err) {
       setError(getErrorMessage(err, 'Registration failed'))
     }
@@ -31,11 +28,14 @@ export function RegisterPage() {
       <h1>Create account</h1>
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
-          Email
+          Username
           <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            minLength={3}
+            maxLength={32}
+            pattern="[a-zA-Z0-9_]+"
             required
           />
         </label>
@@ -50,7 +50,6 @@ export function RegisterPage() {
           />
         </label>
         {error && <p className="auth-error">{error}</p>}
-        {message && <p className="auth-message">{message}</p>}
         <button type="submit" disabled={registerMutation.isPending}>
           Register
         </button>

@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: shogunate-postgres
+    environment:
+      POSTGRES_DB: shogunate
+      POSTGRES_USER: shogunate
+      POSTGRES_PASSWORD: shogunate
+    ports:
+      - "5433:5432"
+    volumes:
+      - shogunate_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shogunate -d shogunate"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  shogunate_pg_data:

@@ -10,7 +10,7 @@ Each user has a fully isolated environment. There are no social or sharing featu
 
 ## 2. Goals
 
-- Let users discover shows (via TMDb) and add them to a personal library.
+- Let users discover shows (via TVmaze) and add them to a personal library.
 - Let users mark episodes, seasons, and shows as watched/unwatched, with sensible cascading behavior.
 - Let users write independent reviews (rating + text) at the episode, season, and show level.
 - Surface analytics: favorite shows/seasons, watch counts over time periods, and time-to-watch metrics.
@@ -41,9 +41,9 @@ Single user type: an **authenticated individual user**. Every user has their own
 - Session/auth handled via a token-based mechanism (e.g. JWT), scoped per user.
 
 ### 5.2 Show Discovery & Library Management
-- Users search TMDb directly from within the app.
+- Users search TVmaze directly from within the app.
 - Search results can be added to the user's personal library.
-- On adding a show, its metadata (title, overview, poster, air dates) and full season/episode structure is fetched from TMDb and stored locally in the app's database (a local snapshot, not a live pass-through), so the app functions correctly even if TMDb is later unreachable.
+- On adding a show, its metadata (title, overview, poster, air dates) and full season/episode structure is fetched from TVmaze and stored locally in the app's database (a local snapshot, not a live pass-through), so the app functions correctly even if TVmaze is later unreachable.
 - Shows in a user's library can have a status of:
   - **None** (default — just added, no explicit status)
   - **Plan to Watch**
@@ -90,14 +90,14 @@ All analytics are computed per-user, from the user's own watch-event history and
 ## 6. Data Model (Conceptual)
 
 - **User**: id, username, passwordHash, createdAt
-- **Show**: id, userId, tmdbId, title, overview, posterUrl, firstAirDate, libraryStatus (`NONE` / `PLAN_TO_WATCH`), watched (bool), watchedAt, createdAt
+- **Show**: id, userId, tvmazeId, title, overview, posterUrl, firstAirDate, libraryStatus (`NONE` / `PLAN_TO_WATCH`), watched (bool), watchedAt, createdAt
 - **Season**: id, showId, seasonNumber, name, watched (bool), watchedAt
 - **Episode**: id, seasonId, episodeNumber, title, airDate, watched (bool), watchedAt
 - **Review**: id, userId, targetType (`EPISODE`/`SEASON`/`SHOW`), targetId, rating (0.5–5.0, step 0.5), text, createdAt, updatedAt
 - **WatchEvent** (immutable history log): id, userId, targetType, targetId, action (`WATCHED`/`UNWATCHED`), timestamp, triggeredByCascade (bool), cascadeSourceId (nullable — the parent action that caused this, if any)
 - **Favorite**: id, userId, targetType (`SHOW`/`SEASON`), targetId, isManual (bool), createdAt
 
-> Note: `Show`, `Season`, and `Episode` are stored as user-owned copies populated from TMDb at add-time (not shared/global rows across users), keeping each user's library fully isolated and independently mutable, at the cost of some data duplication. This can be revisited later if storage/consistency becomes a concern.
+> Note: `Show`, `Season`, and `Episode` are stored as user-owned copies populated from TVmaze at add-time (not shared/global rows across users), keeping each user's library fully isolated and independently mutable, at the cost of some data duplication. This can be revisited later if storage/consistency becomes a concern.
 
 ---
 
@@ -107,7 +107,7 @@ All analytics are computed per-user, from the user's own watch-event history and
 - **Backend:** Java, Spring Boot, Gradle
 - **Frontend:** React, TypeScript, pnpm
 - **Database:** PostgreSQL
-- **External integration:** TMDb API for show/season/episode metadata and search
+- **External integration:** TVmaze API for show/season/episode metadata and search
 
 ### 7.2 Monorepo Structure
 Simple, independently-buildable folder layout — no monorepo orchestration tool (Nx/Turborepo):
@@ -151,7 +151,7 @@ Out of scope for this PRD. MVP target is local/dev environment only; infrastruct
 These were reasonable defaults chosen to keep things unambiguous, flagged here in case they need adjustment:
 
 1. `Plan to Watch` status applies only at the **show** level, not season/episode.
-2. Show/season/episode metadata is **snapshotted locally** at add-time rather than kept live-synced with TMDb (so a TMDb update to episode counts, titles, etc. won't automatically propagate to a show already in a user's library).
+2. Show/season/episode metadata is **snapshotted locally** at add-time rather than kept live-synced with TVmaze (so a TVmaze update to episode counts, titles, etc. won't automatically propagate to a show already in a user's library).
 3. Removing a show from a library deletes that user's associated watch/review/favorite data for that show, but has no effect on other users.
 
 ---

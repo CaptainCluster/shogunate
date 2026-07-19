@@ -97,7 +97,7 @@ These encode rules from the PRD/Architecture that are easy to accidentally viola
 - **No rating roll-up.** Episode, season, and show ratings/reviews are fully independent. Never compute or cache a show's rating from its seasons' or episodes' ratings, or vice versa.
 - **Rating precision is 0.5 increments between 0.5 and 5.0.** Validate this both client- and server-side.
 - **No cross-user visibility, ever.** There are no social features. Don't add any endpoint, query, or UI element that exposes one user's data to another, even read-only, even for "leaderboard"-style features that might seem harmless.
-- **TMDb is called only from `show/tmdb/TmdbClient`.** No other class should call out to TMDb directly. Search results are never persisted — only an explicit "add to library" action writes a snapshot.
+- **TVmaze is called only from `show/tvmaze/TvmazeClient`.** No other class should call out to TVmaze directly. Search results are never persisted — only an explicit "add to library" action writes a snapshot.
 - **Frontend server state uses TanStack Query only.** All data from `api/*.ts` MUST be consumed via `useQuery`/`useMutation` hooks in `features/<feature>/hooks/`. Do not call `api/*` from pages or components directly, and do not store server responses in `useState`/`useEffect`. Form and UI-only state (inputs, modals) may use `useState`. JWT token persistence in `localStorage` is client session plumbing, not server state.
 
 ---
@@ -133,7 +133,7 @@ Use the standard types (`feat`, `fix`, `refactor`, `test`, `chore`, `docs`) and 
 
 Three assumptions are already flagged as open in `docs/PRD.md` §9 and carried into `docs/ARCHITECTURE.md` §9 — don't silently resolve these yourself if you hit them (e.g. while implementing Tasks 2.4/2.5):
 1. Whether "Plan to Watch" applies only at the show level.
-2. Whether show metadata is a one-time snapshot vs. kept live-synced with TMDb.
+2. Whether show metadata is a one-time snapshot vs. kept live-synced with TVmaze.
 3. Exact cascade-delete behavior when a show is removed from a library.
 
 For these, and for anything else not fully specified in PRD/ARCHITECTURE/TASKS: stop and ask, rather than picking a default and moving on. A wrong guess here tends to compound across several tasks before anyone notices.

@@ -46,7 +46,7 @@ After Postgres is running, seed a verified dev account (idempotent; safe to re-r
 
 Default credentials:
 
-- Email: `firstmock.lastmock@local.test`
+- Username: `firstmock_lastmock`
 - Password: `TestPassword123!`
 
 The script uses the auth API when the backend is up; otherwise it inserts directly into Postgres. Extend `scripts/populate_test_data.sh` when new domains need local fixtures (shows, watch history, etc.).

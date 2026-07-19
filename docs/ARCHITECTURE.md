@@ -43,8 +43,6 @@ backend/
     ├── auth/
     │   ├── AuthController.java
     │   ├── AuthService.java
-    │   ├── EmailVerificationTokenRepository.java
-    │   ├── PasswordResetTokenRepository.java
     │   ├── UserRepository.java
     │   ├── User.java                  (entity)
     │   └── dto/
@@ -128,9 +126,8 @@ erDiagram
 
     USERS {
         uuid id PK
-        text email
+        text username
         text password_hash
-        boolean email_verified
         timestamp created_at
     }
     SHOWS {
@@ -344,7 +341,7 @@ Unmarking a season/show as watched triggers a confirmation modal (shared `useCon
 ## 8. Cross-Cutting Concerns
 
 ### 8.1 Security
-- JWT issued on login/register, sent as `Authorization: Bearer <token>` on every request.
+- JWT issued on login, sent as `Authorization: Bearer <token>` on every request.
 - `CurrentUserResolver` injects the authenticated user's ID into every service call — repositories always filter by this ID; no endpoint accepts a client-supplied user ID.
 - Season/show-level unmark endpoints require a `confirm=true` request parameter; requests without it return `400` with a message directing the client to confirm.
 

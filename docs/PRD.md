@@ -36,9 +36,7 @@ Single user type: an **authenticated individual user**. Every user has their own
 ## 5. Functional Requirements
 
 ### 5.1 Authentication & Account Management
-- Sign up / log in via **email + password**.
-- **Email verification** required to activate an account.
-- **Password reset** flow via emailed link/token.
+- Sign up / log in via **username + password**.
 - Passwords stored using a strong one-way hash (e.g. bcrypt/Argon2) — never stored or logged in plaintext.
 - Session/auth handled via a token-based mechanism (e.g. JWT), scoped per user.
 
@@ -91,7 +89,7 @@ All analytics are computed per-user, from the user's own watch-event history and
 
 ## 6. Data Model (Conceptual)
 
-- **User**: id, email, passwordHash, emailVerified, createdAt
+- **User**: id, username, passwordHash, createdAt
 - **Show**: id, userId, tmdbId, title, overview, posterUrl, firstAirDate, libraryStatus (`NONE` / `PLAN_TO_WATCH`), watched (bool), watchedAt, createdAt
 - **Season**: id, showId, seasonNumber, name, watched (bool), watchedAt
 - **Episode**: id, seasonId, episodeNumber, title, airDate, watched (bool), watchedAt

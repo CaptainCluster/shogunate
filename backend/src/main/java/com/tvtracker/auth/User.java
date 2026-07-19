@@ -15,24 +15,20 @@ public class User {
     private UUID id;
 
     @Column(nullable = false, unique = true)
-    private String email;
+    private String username;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
-
-    @Column(name = "email_verified", nullable = false)
-    private boolean emailVerified;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     protected User() {}
 
-    public User(UUID id, String email, String passwordHash, boolean emailVerified, Instant createdAt) {
+    public User(UUID id, String username, String passwordHash, Instant createdAt) {
         this.id = id;
-        this.email = email;
+        this.username = username;
         this.passwordHash = passwordHash;
-        this.emailVerified = emailVerified;
         this.createdAt = createdAt;
     }
 
@@ -40,24 +36,16 @@ public class User {
         return id;
     }
 
-    public String getEmail() {
-        return email;
+    public String getUsername() {
+        return username;
     }
 
     public String getPasswordHash() {
         return passwordHash;
     }
 
-    public boolean isEmailVerified() {
-        return emailVerified;
-    }
-
     public Instant getCreatedAt() {
         return createdAt;
-    }
-
-    public void setEmailVerified(boolean emailVerified) {
-        this.emailVerified = emailVerified;
     }
 
     public void setPasswordHash(String passwordHash) {

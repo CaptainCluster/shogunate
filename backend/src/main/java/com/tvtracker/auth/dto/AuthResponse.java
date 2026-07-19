@@ -2,4 +2,4 @@ package com.tvtracker.auth.dto;
 
 import java.util.UUID;
 
-public record AuthResponse(String token, UUID userId, String email) {}
+public record AuthResponse(String token, UUID userId, String username) {}

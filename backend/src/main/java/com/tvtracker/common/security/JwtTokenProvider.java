@@ -22,11 +22,11 @@ public class JwtTokenProvider {
         this.expirationMs = expirationMs;
     }
 
-    public String createToken(UUID userId, String email) {
+    public String createToken(UUID userId, String username) {
         Instant now = Instant.now();
         return Jwts.builder()
                 .subject(userId.toString())
-                .claim("email", email)
+                .claim("username", username)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMs)))
                 .signWith(secretKey)

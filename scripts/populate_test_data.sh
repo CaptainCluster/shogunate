@@ -11,9 +11,7 @@ PGPASSWORD="${PGPASSWORD:-shogunate}"
 PGDATABASE="${PGDATABASE:-shogunate}"
 API_BASE_URL="${API_BASE_URL:-http://localhost:8080}"
 
-MOCK_USER_FIRST_NAME="${MOCK_USER_FIRST_NAME:-Firstmock}"
-MOCK_USER_LAST_NAME="${MOCK_USER_LAST_NAME:-Lastmock}"
-MOCK_USER_EMAIL="${MOCK_USER_EMAIL:-firstmock.lastmock@local.test}"
+MOCK_USER_USERNAME="${MOCK_USER_USERNAME:-firstmock_lastmock}"
 MOCK_USER_PASSWORD="${MOCK_USER_PASSWORD:-TestPassword123!}"
 MOCK_USER_ID="${MOCK_USER_ID:-a1111111-1111-4111-8111-111111111111}"
 
@@ -88,14 +86,23 @@ PY
     }
   fi
 
-  die "Custom MOCK_USER_PASSWORD requires the backend API or python3 with the bcrypt package. Use the default password or start the backend."
+  die "Custom MOCK_USER_PASSWORD requires python3 with the bcrypt package, or use the default password."
 }
 
-user_verification_status() {
-  psql_exec --command="SELECT email_verified FROM users WHERE lower(email) = lower('${MOCK_USER_EMAIL}');"
+user_exists() {
+  local count
+  count="$(
+    psql_exec --command="
+SELECT COUNT(*)
+FROM users
+WHERE lower(username) = lower('${MOCK_USER_USERNAME}');
+"
+  )"
+  count="$(printf '%s' "$count" | tr -d '[:space:]')"
+  [[ "$count" != "0" ]]
 }
 
-create_verified_user_via_sql() {
+create_user_via_sql() {
   local password_hash
   password_hash="$(resolve_password_hash)"
 
@@ -105,23 +112,21 @@ create_verified_user_via_sql() {
     --username="$PGUSER" \
     --dbname="$PGDATABASE" \
     --command="
-INSERT INTO users (id, email, password_hash, email_verified, created_at)
+INSERT INTO users (id, username, password_hash, created_at)
 VALUES (
   '${MOCK_USER_ID}',
-  '${MOCK_USER_EMAIL}',
+  lower('${MOCK_USER_USERNAME}'),
   '${password_hash}',
-  true,
   NOW()
 )
-ON CONFLICT (email) DO UPDATE SET
-  email_verified = true,
+ON CONFLICT (username) DO UPDATE SET
   password_hash = EXCLUDED.password_hash;
 "
 }
 
 register_user_via_api() {
   local payload
-  payload="$(printf '{"email":"%s","password":"%s"}' "$MOCK_USER_EMAIL" "$MOCK_USER_PASSWORD")"
+  payload="$(printf '{"username":"%s","password":"%s"}' "$MOCK_USER_USERNAME" "$MOCK_USER_PASSWORD")"
 
   local status
   status="$(
@@ -137,11 +142,11 @@ register_user_via_api() {
       log "Registered test user via API."
       ;;
     409 | 400)
-      if [[ "$(user_verification_status)" == "t" ]]; then
-        log "Verified test user already exists."
+      if user_exists; then
+        log "Test user already exists."
         return 0
       fi
-      log "Test user already registered; verifying existing account."
+      die "Registration failed with HTTP ${status}: $(cat /tmp/populate_test_data_register.json)"
       ;;
     *)
       die "Registration failed with HTTP ${status}: $(cat /tmp/populate_test_data_register.json)"
@@ -149,81 +154,31 @@ register_user_via_api() {
   esac
 }
 
-verify_user_via_api() {
-  local token
-  token="$(
-    psql_exec --command="
-SELECT token
-FROM email_verification_tokens evt
-JOIN users u ON u.id = evt.user_id
-WHERE lower(u.email) = lower('${MOCK_USER_EMAIL}')
-  AND evt.used_at IS NULL
-  AND evt.expires_at > NOW()
-ORDER BY evt.created_at DESC
-LIMIT 1;
-"
-  )"
-
-  token="$(printf '%s' "$token" | tr -d '[:space:]')"
-  if [[ -z "$token" ]]; then
-    if [[ "$(user_verification_status)" == "t" ]]; then
-      return 0
-    fi
-    die "No active verification token found for ${MOCK_USER_EMAIL}."
-  fi
-
-  local payload
-  payload="$(printf '{"token":"%s"}' "$token")"
-
-  local status
-  status="$(
-    curl --silent --show-error --write-out '%{http_code}' --output /tmp/populate_test_data_verify.json \
-      --request POST \
-      --header 'Content-Type: application/json' \
-      --data "$payload" \
-      "${API_BASE_URL}/api/auth/verify-email"
-  )"
-
-  if [[ "$status" != "200" ]]; then
-    die "Email verification failed with HTTP ${status}: $(cat /tmp/populate_test_data_verify.json)"
-  fi
-
-  log "Verified test user via API."
-}
-
-create_verified_user_via_api() {
-  register_user_via_api
-  if [[ "$(user_verification_status)" != "t" ]]; then
-    verify_user_via_api
-  fi
-}
-
 print_credentials() {
   log "Local test user ready:"
-  log "  Name:     ${MOCK_USER_FIRST_NAME} ${MOCK_USER_LAST_NAME}"
-  log "  Email:    ${MOCK_USER_EMAIL}"
+  log "  Username: ${MOCK_USER_USERNAME}"
   log "  Password: ${MOCK_USER_PASSWORD}"
 }
 
 main() {
   wait_for_postgres
 
-  if [[ "$(user_verification_status)" == "t" ]]; then
-    log "Verified test user already exists."
+  if user_exists; then
+    log "Test user already exists."
     print_credentials
     exit 0
   fi
 
   if backend_is_up; then
     log "Backend detected; creating test user through auth API."
-    create_verified_user_via_api
+    register_user_via_api
   else
-    log "Backend not running; inserting verified test user directly into Postgres."
-    create_verified_user_via_sql
+    log "Backend not running; inserting test user directly into Postgres."
+    create_user_via_sql
   fi
 
-  if [[ "$(user_verification_status)" != "t" ]]; then
-    die "Test user exists but is still unverified."
+  if ! user_exists; then
+    die "Test user was not created."
   fi
 
   print_credentials

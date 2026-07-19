@@ -16,7 +16,7 @@ export function Layout() {
           <Link to="/">Home</Link>
           {user ? (
             <>
-              <span>{user.email}</span>
+              <span>{user.username}</span>
               <button type="button" onClick={logout}>
                 Log out
               </button>

@@ -10,7 +10,7 @@ export function HomePage() {
       <p>Track your TV shows, seasons, and episodes.</p>
       {user ? (
         <div>
-          <p>Signed in as {user.email}</p>
+          <p>Signed in as {user.username}</p>
           <button type="button" onClick={logout}>
             Log out
           </button>

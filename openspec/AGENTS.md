@@ -2,14 +2,24 @@
 
 Instructions for AI coding agents (e.g. Claude Code) working in this repository. Humans are welcome to read this too, but its primary audience is an agent about to make changes here.
 
-Before doing anything else, read `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/TASKS.md`. This repo is being built spec-driven: PRD defines *what*, ARCHITECTURE defines *how it's structured*, TASKS.md defines *what to do next and in what order*. Don't improvise scope or structure that contradicts those documents — if something seems missing or contradictory, flag it instead of guessing (see "When Something Is Ambiguous" below).
+This repo uses **OpenSpec** to drive spec-driven development. `openspec/specs/` is the live source of truth for system behavior — read it before starting any work. `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/TASKS.md` are the original human-authored planning documents that OpenSpec's specs were derived from; they remain useful as a readable overview and for implementation-level detail (package structure, DB schema, sequence flows) that intentionally does *not* live in `openspec/specs/` — but for current behavior, `openspec/specs/` wins if the two ever disagree.
+
+**Workflow — use OpenSpec's commands, don't freehand it:**
+- Start new work with `/opsx:propose` (or `/opsx:new`) to create a change under `openspec/changes/<change-name>/`.
+- Implement via `/opsx:apply`, working through that change's own `tasks.md` — not `docs/TASKS.md`.
+- Verify with `/opsx:verify` where applicable, then complete with `/opsx:archive`, which merges the change's delta specs into `openspec/specs/` and moves the change folder to `openspec/changes/archive/`.
+- Delta specs (`openspec/changes/<name>/specs/<domain>/spec.md`) describe ADDED/MODIFIED/REMOVED requirements relative to the current spec in `openspec/specs/<domain>/spec.md` — write these, don't restate the whole spec.
+- `docs/TASKS.md` is historical/reference only at this point (see its header note) — it maps out the original planned build order, but the actual unit of work an agent picks up and checks off is a change's own `tasks.md`, created via `/opsx:propose`.
+
+Don't improvise scope or structure that contradicts `openspec/specs/` or the documents in `docs/` — if something seems missing or contradictory between them, flag it instead of guessing (see "When Something Is Ambiguous" below).
 
 ---
 
 ## 1. Repository Layout
 
 ```
-/docs           → PRD.md, ARCHITECTURE.md, TASKS.md (read these first)
+/openspec       → OpenSpec workspace: specs/ (live source of truth), changes/ (work in progress + archive)
+/docs           → PRD.md, ARCHITECTURE.md (implementation detail), TASKS.md (historical reference)
 /backend        → Spring Boot + Gradle (Java)
 /frontend       → React + TypeScript + pnpm
 docker-compose.yml → local Postgres only, for local dev
@@ -78,10 +88,13 @@ These encode rules from the PRD/Architecture that are easy to accidentally viola
 
 ## 5. Task Tracking
 
-`docs/TASKS.md` is a live checklist, not just a static reference. When you complete a task:
-1. Verify it against its stated acceptance criteria before marking it done.
-2. Check its box in `docs/TASKS.md` (`- [ ]` → `- [x]`) in the same change/commit that completes it.
-3. If a task turns out to need something not covered in PRD/ARCHITECTURE (see below), resolve or flag that *before* checking the box — don't check it off with an undocumented gap.
+Work is tracked in the active change's own `openspec/changes/<change-name>/tasks.md`, not `docs/TASKS.md`. When you complete a task:
+1. Verify it against its stated acceptance criteria (and the relevant scenarios in `openspec/specs/<domain>/spec.md` or the change's delta specs) before marking it done.
+2. Check its box in that change's `tasks.md` (`- [ ]` → `- [x]`) in the same commit that completes it.
+3. If a task turns out to need something not covered in the proposal/design/specs, resolve or flag that *before* checking the box — don't check it off with an undocumented gap.
+4. When the change is complete, run `/opsx:archive` so its delta specs merge into `openspec/specs/` and the change folder moves to `openspec/changes/archive/`. Don't hand-edit `openspec/specs/` directly outside of this merge process.
+
+`docs/TASKS.md` reflects the original planned build order and is kept for historical reference — it is not updated as work proceeds.
 
 ---
 

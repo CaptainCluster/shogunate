@@ -29,7 +29,7 @@
 ## 6. Verification
 
 - [x] 6.1 `pnpm build` passes
-- [ ] 6.2 Manual E2E: register → verify → login → protected route → logout
-- [ ] 6.3 Manual: invalid token in localStorage → reload → token cleared, redirect to login
-- [ ] 6.4 Manual: login user A → logout → login user B → email updates in Layout
-- [ ] 6.5 Manual: two tabs — logout in one → switch to other → session syncs via storage listener
+- [x] 6.2 Manual E2E: register → verify → login → protected route → logout
+- [x] 6.3 Manual: invalid token in localStorage → reload → token cleared, redirect to login
+- [x] 6.4 Manual: login user A → logout → login user B → email updates in Layout
+- [x] 6.5 Manual: two tabs — logout in one → switch to other → session syncs via storage listener

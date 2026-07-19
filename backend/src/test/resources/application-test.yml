@@ -1,0 +1,15 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+  flyway:
+    enabled: false
+
+jwt:
+  secret: test-secret-key-minimum-32-characters-long
+  expiration-ms: 3600000
+
+auth:
+  verification-token-expiration-hours: 24
+  password-reset-token-expiration-hours: 1

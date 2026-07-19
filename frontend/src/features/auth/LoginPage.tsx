@@ -1,11 +1,12 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { getErrorMessage, useAuth } from '../../hooks/useAuth'
+import { useLogin } from './hooks/useLogin'
+import { getErrorMessage } from '../../lib/getErrorMessage'
 import './auth.css'
 
 export function LoginPage() {
-  const { login } = useAuth()
+  const loginMutation = useLogin()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -14,7 +15,7 @@ export function LoginPage() {
     event.preventDefault()
     setError(null)
     try {
-      await login(email, password)
+      await loginMutation.mutateAsync({ email, password })
     } catch (err) {
       setError(getErrorMessage(err, 'Login failed'))
     }
@@ -43,7 +44,9 @@ export function LoginPage() {
           />
         </label>
         {error && <p className="auth-error">{error}</p>}
-        <button type="submit">Log in</button>
+        <button type="submit" disabled={loginMutation.isPending}>
+          Log in
+        </button>
       </form>
       <div className="auth-links">
         <Link to="/register">Create an account</Link>

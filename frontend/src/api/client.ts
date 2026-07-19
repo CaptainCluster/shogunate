@@ -9,16 +9,45 @@ export class ApiError extends Error {
   }
 }
 
-function getAuthToken(): string | null {
-  return localStorage.getItem('auth_token')
+const AUTH_TOKEN_KEY = 'auth_token'
+const AUTH_TOKEN_CHANGED = 'auth_token_changed'
+
+export function getAuthToken(): string | null {
+  return localStorage.getItem(AUTH_TOKEN_KEY)
+}
+
+export function getAuthTokenSnapshot(): string | null {
+  return getAuthToken()
+}
+
+export function subscribeAuthToken(onChange: () => void) {
+  const handleTokenChange = (event: Event) => {
+    if (event.type === AUTH_TOKEN_CHANGED) {
+      onChange()
+      return
+    }
+    const storageEvent = event as StorageEvent
+    if (storageEvent.key === AUTH_TOKEN_KEY) {
+      onChange()
+    }
+  }
+
+  window.addEventListener(AUTH_TOKEN_CHANGED, handleTokenChange)
+  window.addEventListener('storage', handleTokenChange)
+
+  return () => {
+    window.removeEventListener(AUTH_TOKEN_CHANGED, handleTokenChange)
+    window.removeEventListener('storage', handleTokenChange)
+  }
 }
 
 export function setAuthToken(token: string | null) {
   if (token) {
-    localStorage.setItem('auth_token', token)
+    localStorage.setItem(AUTH_TOKEN_KEY, token)
   } else {
-    localStorage.removeItem('auth_token')
+    localStorage.removeItem(AUTH_TOKEN_KEY)
   }
+  window.dispatchEvent(new Event(AUTH_TOKEN_CHANGED))
 }
 
 export async function apiRequest<T>(

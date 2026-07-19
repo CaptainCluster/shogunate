@@ -1,11 +1,12 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import * as authApi from '../../api/authApi'
-import { getErrorMessage } from '../../hooks/useAuth'
+import { getErrorMessage } from '../../lib/getErrorMessage'
+import { useForgotPassword } from './hooks/useForgotPassword'
 import './auth.css'
 
 export function ForgotPasswordPage() {
+  const forgotPasswordMutation = useForgotPassword()
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
@@ -15,7 +16,7 @@ export function ForgotPasswordPage() {
     setError(null)
     setMessage(null)
     try {
-      const response = await authApi.forgotPassword(email)
+      const response = await forgotPasswordMutation.mutateAsync(email)
       setMessage(response.message)
     } catch (err) {
       setError(getErrorMessage(err, 'Request failed'))
@@ -37,7 +38,9 @@ export function ForgotPasswordPage() {
         </label>
         {error && <p className="auth-error">{error}</p>}
         {message && <p className="auth-message">{message}</p>}
-        <button type="submit">Send reset link</button>
+        <button type="submit" disabled={forgotPasswordMutation.isPending}>
+          Send reset link
+        </button>
       </form>
       <div className="auth-links">
         <Link to="/login">Back to login</Link>

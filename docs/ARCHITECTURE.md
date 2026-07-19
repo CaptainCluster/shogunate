@@ -293,14 +293,20 @@ frontend/
     │   └── analyticsApi.ts
     │
     ├── features/              # feature-oriented UI, mirrors backend features
-    │   ├── auth/               (login, register, verify, reset-password pages)
+    │   ├── auth/               (pages, hooks/, authKeys.ts, clearSession.ts)
+    │   │   └── hooks/           (useQuery/useMutation per authApi function)
     │   ├── library/             (search, add show, library list/detail)
+    │   │   └── hooks/
     │   ├── watch/               (mark/unmark controls, confirmation modal)
+    │   │   └── hooks/
     │   ├── reviews/             (review form, review list)
+    │   │   └── hooks/
     │   ├── favorites/
+    │   │   └── hooks/
     │   └── analytics/           (dashboards/charts)
+    │       └── hooks/
     │
-    ├── hooks/                  # shared hooks (useAuth, useConfirm, etc.)
+    ├── hooks/                  # shared facades only (useAuth composes auth TanStack hooks)
     ├── components/              # shared/dumb UI components (buttons, stars, modals)
     ├── routes/                  # route definitions
     └── lib/
@@ -312,6 +318,23 @@ frontend/
 - Query keys are namespaced by feature and target, e.g. `['shows', userId]`, `['watch-status', targetType, targetId]`, `['analytics', 'watch-counts', period]`.
 - Mutations (mark/unmark watched, add review, toggle favorite) invalidate the relevant query keys on success — e.g. marking a show watched invalidates that show's detail query *and* all descendant season/episode queries *and* the analytics queries, since cascades affect all of them.
 - Local component/UI-only state (form inputs, modal open/closed) uses plain `useState`, not TanStack Query.
+
+### 7.2.1 Auth and session
+
+- JWT in `localStorage` via `api/client.ts` is client session plumbing (not TanStack-managed).
+- `/api/me` and all other API responses use TanStack Query only.
+- `hooks/useAuth` is a shared **facade** composing TanStack hooks; it must not fetch directly.
+- Reference implementation: `features/auth/hooks/`, `authKeys.ts`, `clearSession.ts`.
+
+**Deprecated patterns (superseded by `frontend-tanstack-auth`; do not reintroduce):**
+
+| Dead pattern | Replacement |
+|---|---|
+| `AuthProvider` / React Context for user state | `QueryClientProvider` + `useCurrentUser()` |
+| `refreshUser()` | `queryClient.invalidateQueries({ queryKey: authKeys.me() })` |
+| `useState`/`useEffect` + `authApi.getCurrentUser()` | `useCurrentUser()` |
+| Direct `authApi.*` in pages | `features/auth/hooks/use*.ts` |
+| `getErrorMessage` exported from `useAuth.tsx` | `lib/getErrorMessage.ts` |
 
 ### 7.3 Cascade Confirmation UX
 Unmarking a season/show as watched triggers a confirmation modal (shared `useConfirm` hook) before the mutation fires — matching the backend's requirement for an explicit confirm flag (Section 5).

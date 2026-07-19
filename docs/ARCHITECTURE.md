@@ -6,7 +6,7 @@ Companion to `PRD.md`. This document describes how the system is structured to d
 
 ## 1. System Overview
 
-A classic client-server architecture: a React SPA talks to a Spring Boot REST API over HTTPS/JSON, backed by PostgreSQL. The backend also talks out to TMDb for show discovery/metadata. No other external services are involved for MVP.
+A classic client-server architecture: a React SPA talks to a Spring Boot REST API over HTTPS/JSON, backed by PostgreSQL. The backend also talks out to TVmaze for show discovery/metadata. No other external services are involved for MVP.
 
 ```mermaid
 flowchart LR
@@ -19,14 +19,14 @@ flowchart LR
         DB[(PostgreSQL)]
     end
 
-    TMDB[(TMDb API)]
+    TVMAZE[(TVmaze API)]
 
     FE -- REST/JSON, JWT auth --> API
     API -- JDBC --> DB
-    API -- HTTPS --> TMDB
+    API -- HTTPS --> TVMAZE
 ```
 
-- **Frontend** never talks to TMDb directly — all metadata fetches are proxied through the backend, which owns the caching/snapshotting behavior.
+- **Frontend** never talks to TVmaze directly — all metadata fetches are proxied through the backend, which owns the caching/snapshotting behavior.
 - **Backend** is a single Spring Boot application (no separate microservices) — appropriate given the scope and the "local/dev only for now" deployment target.
 
 ---
@@ -57,9 +57,9 @@ backend/
     │   ├── SeasonRepository.java
     │   ├── EpisodeRepository.java
     │   ├── Show.java / Season.java / Episode.java   (entities)
-    │   ├── tmdb/
-    │   │   ├── TmdbClient.java         (HTTP client to TMDb)
-    │   │   └── TmdbMapper.java         (TMDb DTOs -> local entities)
+    │   ├── tvmaze/
+    │   │   ├── TvmazeClient.java         (HTTP client to TVmaze)
+    │   │   └── TvmazeMapper.java         (TVmaze DTOs -> local entities)
     │   └── dto/
     │
     ├── watch/
@@ -98,7 +98,7 @@ backend/
     │
     └── config/
         ├── OpenApiConfig.java          (Swagger/OpenAPI setup)
-        └── TmdbConfig.java             (API key, base URL, rate-limit settings)
+        └── TvmazeConfig.java             (base URL, User-Agent, rate-limit settings)
 ```
 
 - `analytics/` is intentionally read-only and cross-cutting — it queries `watch_events`, `reviews`, and `favorites` directly rather than owning its own tables.
@@ -133,7 +133,7 @@ erDiagram
     SHOWS {
         uuid id PK
         uuid user_id FK
-        int tmdb_id
+        int tvmaze_id
         text title
         text overview
         text poster_url
@@ -202,30 +202,30 @@ erDiagram
 
 ---
 
-## 4. TMDb Integration & Snapshotting
+## 4. TVmaze Integration & Snapshotting
 
 ```mermaid
 sequenceDiagram
     participant FE as Frontend
     participant API as ShowController/Service
-    participant TMDB as TMDb API
+    participant TVMAZE as TVmaze API
     participant DB as PostgreSQL
 
     FE->>API: GET /api/shows/search?query=...
-    API->>TMDB: GET /search/tv?query=...
-    TMDB-->>API: results (not persisted)
+    API->>TVMAZE: GET /search/shows?q=...
+    TVMAZE-->>API: results (not persisted)
     API-->>FE: search results
 
-    FE->>API: POST /api/shows { tmdbId }
-    API->>TMDB: GET /tv/{id} + /tv/{id}/season/{n}
-    TMDB-->>API: full show/season/episode metadata
+    FE->>API: POST /api/shows { tvmazeId }
+    API->>TVMAZE: GET /shows/{id} + /shows/{id}/episodes
+    TVMAZE-->>API: full show/episode metadata
     API->>DB: INSERT show, seasons, episodes (snapshot)
     API-->>FE: created show (library entry)
 ```
 
 - Search results are never persisted — only a full "add to library" action triggers a snapshot write.
-- The snapshot is a one-time copy; TMDb is not polled afterward for changes (per PRD assumption #2 — flagged for confirmation).
-- `TmdbClient` is the only component allowed to call out to TMDb; it wraps the API key and handles rate-limit backoff/retry.
+- The snapshot is a one-time copy; TVmaze is not polled afterward for changes (per PRD assumption #2 — flagged for confirmation).
+- `TvmazeClient` is the only component allowed to call out to TVmaze; it sets a descriptive User-Agent and handles rate-limit backoff/retry.
 
 ---
 
@@ -355,11 +355,11 @@ Unmarking a season/show as watched triggers a confirmation modal (shared `useCon
 
 ### 8.4 Local Development Setup
 - `docker-compose.yml` at the repo root spins up PostgreSQL for local development only (app processes themselves run natively via Gradle/pnpm, not containerized yet — per PRD §7.4).
-- Backend configuration via Spring profiles (`application-local.yml`) for DB connection, TMDb API key, and JWT secret.
+- Backend configuration via Spring profiles (`application-local.yml`) for DB connection, optional TVmaze base URL, and JWT secret.
 - Frontend configuration via `.env.local` for the API base URL.
 
 ---
 
 ## 9. Open Items Carried Over from PRD
 
-The three assumptions flagged in `PRD.md` §9 directly affect this architecture (schema for `library_status`, the snapshot-vs-live-sync model in Section 4, and cascade-delete behavior) — if those change, the schema and TMDb integration section will need revisiting accordingly.
+The three assumptions flagged in `PRD.md` §9 directly affect this architecture (schema for `library_status`, the snapshot-vs-live-sync model in Section 4, and cascade-delete behavior) — if those change, the schema and TVmaze integration section will need revisiting accordingly.

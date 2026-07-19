@@ -68,19 +68,19 @@ Checkboxes are for tracking progress as work is completed.
 - [ ] **2.1 — `shows`, `seasons`, `episodes` tables (migration)**
   *Ref: Architecture §3*
 
-- [ ] **2.2 — TMDb client (backend)**
-  `TmdbClient` + `TmdbMapper` + `config/TmdbConfig` (API key, base URL, backoff/retry).
-  *Acceptance:* Client successfully calls TMDb search and detail endpoints against a real (or sandboxed) TMDb API key.
+- [ ] **2.2 — TVmaze client (backend)**
+  `TvmazeClient` + `TvmazeMapper` + `config/TvmazeConfig` (base URL, User-Agent, backoff/retry).
+  *Acceptance:* Client successfully calls TVmaze search and snapshot endpoints against the public API.
   *Ref: Architecture §4*
 
 - [ ] **2.3 — Show search (backend)**
-  `GET /api/shows/search?query=` — proxies TMDb, does not persist results.
-  *Acceptance:* Returns TMDb search results; nothing is written to the DB from a search alone.
+  `GET /api/shows/search?query=` — proxies TVmaze, does not persist results.
+  *Acceptance:* Returns TVmaze search results; nothing is written to the DB from a search alone.
   *Ref: PRD §5.2; Architecture §4*
 
 - [ ] **2.4 — Add show to library / snapshot (backend)**
-  `POST /api/shows { tmdbId }` — fetches full show/season/episode metadata from TMDb and writes the local snapshot.
-  *Acceptance:* Adding a show creates rows in `shows`, `seasons`, and `episodes` scoped to the requesting user; adding the same TMDb show twice for the same user is rejected or is a no-op (decide and document at implementation time).
+  `POST /api/shows { tvmazeId }` — fetches full show/episode metadata from TVmaze and writes the local snapshot.
+  *Acceptance:* Adding a show creates rows in `shows`, `seasons`, and `episodes` scoped to the requesting user; adding the same TVmaze show twice for the same user is rejected with 409 Conflict.
   *Ref: PRD §5.2; Architecture §4*
 
 - [ ] **2.5 — Library CRUD (backend)**
@@ -93,7 +93,7 @@ Checkboxes are for tracking progress as work is completed.
   *Ref: Architecture §7.1*
 
 - [ ] **2.7 — Tests**
-  Unit tests for `TmdbMapper` and snapshot logic. Integration tests for search/add/list/detail/delete endpoints (TMDb calls mocked).
+  Unit tests for `TvmazeMapper` and snapshot logic. Integration tests for search/add/list/detail/delete endpoints (TVmaze calls mocked).
   *Ref: Architecture §8.3*
 
 ---

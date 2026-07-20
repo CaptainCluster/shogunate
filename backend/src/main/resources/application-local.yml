@@ -17,3 +17,7 @@ server:
 jwt:
   secret: local-dev-secret-change-in-production-min-32-chars
   expiration-ms: 86400000
+
+tvmaze:
+  base-url: https://api.tvmaze.com
+  user-agent: Shogunate/1.0 (local-dev; +https://www.tvmaze.com/api)

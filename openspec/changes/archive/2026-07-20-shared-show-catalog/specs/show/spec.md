@@ -1,11 +1,40 @@
-# Show Specification
+## ADDED Requirements
 
-## Purpose
-Discovering shows and managing a user's personal library of shows, seasons, and episodes.
+### Requirement: Shared Catalog Reuse
+When a show already exists in the global catalog, adding it to a user's library SHALL reuse the existing catalog rows without creating duplicate show, season, or episode records and without re-fetching from TVmaze.
 
-Show metadata is sourced from [TVmaze](https://www.tvmaze.com/) via its API. All integration MUST comply with the [TVmaze API license (CC BY-SA 4.0)](https://www.tvmaze.com/api).
+#### Scenario: Second user reuses existing catalog
+- GIVEN a show already in the global catalog from a prior user's add
+- WHEN another user adds the same TVmaze show to their library
+- THEN a new user library entry links that user to the existing catalog show
+- AND no duplicate show, season, or episode rows are created
+- AND TVmaze is not called for that add
 
-## Requirements
+### Requirement: Duplicate Library Add Rejection
+The system SHALL reject attempts to add a show that is already present in the user's library (same TVmaze show identifier), returning a conflict response without modifying existing data.
+
+#### Scenario: Duplicate add is rejected
+- GIVEN a show already in the user's library for a given TVmaze show identifier
+- WHEN the user attempts to add the same show again
+- THEN the request is rejected with a conflict response
+- AND the existing library entry is unchanged
+
+### Requirement: Orphan Catalog Cleanup
+When a user removes a show from their library and no other users have that show in their library, the system SHALL delete the global catalog show and its seasons and episodes.
+
+#### Scenario: Last user removal deletes catalog
+- GIVEN a show in the global catalog with only one user's library entry
+- WHEN that user removes the show from their library
+- THEN the user's library entry and user-scoped data for that show are removed
+- AND the global show, its seasons, and its episodes are deleted
+
+#### Scenario: Partial removal preserves catalog for other users
+- GIVEN a show in the global catalog with library entries for two users
+- WHEN one user removes the show from their library
+- THEN that user's library entry and user-scoped data are removed
+- AND the global catalog rows remain available for the other user
+
+## MODIFIED Requirements
 
 ### Requirement: TVmaze API Compliance
 The system SHALL integrate with TVmaze in compliance with the [TVmaze API license (CC BY-SA 4.0)](https://www.tvmaze.com/api).
@@ -45,39 +74,6 @@ The system SHALL integrate with TVmaze in compliance with the [TVmaze API licens
 - THEN images are hotlinked from TVmaze CDN URLs
 - AND the system MUST NOT use TVmaze as a general-purpose image hosting service
 
-### Requirement: Show Search
-The system SHALL allow a user to search for shows by title, returning TVmaze-sourced metadata, without persisting search results that are not added to the library.
-
-#### Scenario: Search returns results without side effects
-- GIVEN a user submits a search query
-- WHEN matching shows exist
-- THEN matching show metadata is returned
-- AND no records are created for shows that were not explicitly added
-
-### Requirement: Shared Catalog Reuse
-When a show already exists in the global catalog, adding it to a user's library SHALL reuse the existing catalog rows without creating duplicate show, season, or episode records and without re-fetching from TVmaze.
-
-#### Scenario: Second user reuses existing catalog
-- GIVEN a show already in the global catalog from a prior user's add
-- WHEN another user adds the same TVmaze show to their library
-- THEN a new user library entry links that user to the existing catalog show
-- AND no duplicate show, season, or episode rows are created
-- AND TVmaze is not called for that add
-
-### Requirement: Duplicate Library Add Rejection
-The system SHALL reject attempts to add a show that is already present in the user's library (same TVmaze show identifier), returning a conflict response without modifying existing data.
-
-#### Scenario: Duplicate add is rejected
-- GIVEN a show already in the user's library for a given TVmaze show identifier
-- WHEN the user attempts to add the same show again
-- THEN the request is rejected with a conflict response
-- AND the existing library entry is unchanged
-
-#### Scenario: Duplicate add does not create partial data
-- GIVEN a user attempts to add a show already in their library
-- WHEN the duplicate add is rejected
-- THEN no additional library, season, or episode rows are created
-
 ### Requirement: Add Show to Library
 The system SHALL allow a user to add a searched show to their personal library. If the show is not yet in the global catalog, the system SHALL fetch and store its full season and episode structure as it exists at the time of adding. If the show is already in the global catalog, the system SHALL link the user to the existing catalog entry.
 
@@ -101,21 +97,6 @@ The system SHALL support a "Plan to Watch" status at the show level for each use
 - WHEN the user sets its status to "Plan to Watch"
 - THEN that status is reflected on the user's library entry when they view their library
 
-### Requirement: Orphan Catalog Cleanup
-When a user removes a show from their library and no other users have that show in their library, the system SHALL delete the global catalog show and its seasons and episodes.
-
-#### Scenario: Last user removal deletes catalog
-- GIVEN a show in the global catalog with only one user's library entry
-- WHEN that user removes the show from their library
-- THEN the user's library entry and user-scoped data for that show are removed
-- AND the global show, its seasons, and its episodes are deleted
-
-#### Scenario: Partial removal preserves catalog for other users
-- GIVEN a show in the global catalog with library entries for two users
-- WHEN one user removes the show from their library
-- THEN that user's library entry and user-scoped data are removed
-- AND the global catalog rows remain available for the other user
-
 ### Requirement: Remove Show from Library
 The system SHALL allow a user to remove a show from their library. Removal MUST remove that user's library entry and that user's watch state, watch history, reviews, and favorite flags associated with that show. Removal MUST NOT affect any other user's data. When no users remain linked to the show, the global catalog show and its seasons and episodes MUST be deleted.
 
@@ -134,3 +115,8 @@ The system SHALL allow a user to remove a show from their library. Removal MUST 
 - GIVEN a show with library entries for multiple users
 - WHEN one user removes the show
 - THEN the global catalog remains for users who still have the show in their library
+
+#### Scenario: Duplicate add does not create partial data
+- GIVEN a user attempts to add a show already in their library
+- WHEN the duplicate add is rejected
+- THEN no additional library, season, or episode rows are created

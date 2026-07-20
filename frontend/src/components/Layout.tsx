@@ -14,6 +14,8 @@ export function Layout() {
         </Link>
         <nav className="layout-nav">
           <Link to="/">Home</Link>
+          {user && <Link to="/library">Library</Link>}
+          <Link to="/about">About</Link>
           {user ? (
             <>
               <span>{user.username}</span>

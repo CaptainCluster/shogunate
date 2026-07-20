@@ -1,0 +1,91 @@
+.library-page {
+  text-align: left;
+}
+
+.library-section {
+  margin-top: 2rem;
+}
+
+.library-search {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.library-search input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+}
+
+.library-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.library-card {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.library-poster {
+  width: 80px;
+  height: auto;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.library-overview {
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.library-meta {
+  font-size: 0.85rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.library-error {
+  color: #c0392b;
+}
+
+.library-detail-header {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.library-detail-poster {
+  width: 160px;
+  border-radius: 8px;
+}
+
+.season-block {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.season-block ul {
+  list-style: none;
+  padding-left: 0;
+}
+
+.season-block li {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.about-page {
+  text-align: left;
+  max-width: 640px;
+}
+
+.about-page a {
+  color: var(--accent);
+}

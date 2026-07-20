@@ -9,3 +9,7 @@ spring:
 jwt:
   secret: test-secret-key-minimum-32-characters-long
   expiration-ms: 3600000
+
+tvmaze:
+  base-url: https://api.tvmaze.com
+  user-agent: Shogunate/1.0 (test)

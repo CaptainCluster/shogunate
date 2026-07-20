@@ -90,14 +90,16 @@ All analytics are computed per-user, from the user's own watch-event history and
 ## 6. Data Model (Conceptual)
 
 - **User**: id, username, passwordHash, createdAt
-- **Show**: id, userId, tvmazeId, title, overview, posterUrl, firstAirDate, libraryStatus (`NONE` / `PLAN_TO_WATCH`), watched (bool), watchedAt, createdAt
-- **Season**: id, showId, seasonNumber, name, watched (bool), watchedAt
-- **Episode**: id, seasonId, episodeNumber, title, airDate, watched (bool), watchedAt
+- **Show** (global catalog): id, tvmazeId, title, overview, posterUrl, tvmazeUrl, firstAirDate, createdAt
+- **Season**: id, showId, seasonNumber, name
+- **Episode**: id, seasonId, episodeNumber, title, airDate
+- **UserLibrary**: id, userId, showId, libraryStatus (`NONE` / `PLAN_TO_WATCH`), addedAt
+- **UserWatchState**: userId, targetType, targetId, watched (bool), watchedAt
 - **Review**: id, userId, targetType (`EPISODE`/`SEASON`/`SHOW`), targetId, rating (0.5–5.0, step 0.5), text, createdAt, updatedAt
 - **WatchEvent** (immutable history log): id, userId, targetType, targetId, action (`WATCHED`/`UNWATCHED`), timestamp, triggeredByCascade (bool), cascadeSourceId (nullable — the parent action that caused this, if any)
 - **Favorite**: id, userId, targetType (`SHOW`/`SEASON`), targetId, isManual (bool), createdAt
 
-> Note: `Show`, `Season`, and `Episode` are stored as user-owned copies populated from TVmaze at add-time (not shared/global rows across users), keeping each user's library fully isolated and independently mutable, at the cost of some data duplication. This can be revisited later if storage/consistency becomes a concern.
+> Note: `Show`, `Season`, and `Episode` are stored once in a shared global catalog keyed by `tvmaze_id`. Users link to catalog entries via `UserLibrary`. Per-user watch state, reviews, and favorites reference shared catalog UUIDs but remain private per user. When the last user removes a show, orphan catalog rows are deleted.
 
 ---
 

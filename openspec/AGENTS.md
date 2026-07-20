@@ -90,14 +90,14 @@ Query key convention: namespace by feature and target, e.g. `['shows', userId]`,
 
 These encode rules from the PRD/Architecture that are easy to accidentally violate. Do not deviate from these without explicit human confirmation:
 
-- **Per-user data isolation is enforced in the service/repository layer, not just the UI.** Every query touching `shows`, `seasons`, `episodes`, `reviews`, `watch_events`, or `favorites` must be scoped to the authenticated user resolved from the JWT — never trust a user ID from the request body/path.
+- **Per-user data isolation is enforced in the service/repository layer, not just the UI.** Every query touching `user_library`, `user_watch_state`, `reviews`, `watch_events`, or `favorites` must be scoped to the authenticated user resolved from the JWT. Show catalog detail/list endpoints must verify `user_library` membership — never trust a user ID from the request body/path.
 - **`watch_events` is append-only.** Never add an UPDATE or DELETE operation against this table, in the repository layer or anywhere else.
 - **Cascade operations are one atomic transaction.** Marking or unmarking a season/show watched must update all descendant rows and write all corresponding `watch_events` rows inside a single transaction — no partial cascades.
 - **Season/show-level unmark requires an explicit `confirm=true`.** Reject the request with `400` if it's missing — don't silently proceed or silently default it to true.
 - **No rating roll-up.** Episode, season, and show ratings/reviews are fully independent. Never compute or cache a show's rating from its seasons' or episodes' ratings, or vice versa.
 - **Rating precision is 0.5 increments between 0.5 and 5.0.** Validate this both client- and server-side.
 - **No cross-user visibility, ever.** There are no social features. Don't add any endpoint, query, or UI element that exposes one user's data to another, even read-only, even for "leaderboard"-style features that might seem harmless.
-- **TVmaze is called only from `show/tvmaze/TvmazeClient`.** No other class should call out to TVmaze directly. Search results are never persisted — only an explicit "add to library" action writes a snapshot.
+- **TVmaze is called only from `show/tvmaze/TvmazeClient`.** No other class should call out to TVmaze directly. Search results are never persisted — only an explicit "add to library" creates global catalog rows (if missing) and a `user_library` link.
 - **Frontend server state uses TanStack Query only.** All data from `api/*.ts` MUST be consumed via `useQuery`/`useMutation` hooks in `features/<feature>/hooks/`. Do not call `api/*` from pages or components directly, and do not store server responses in `useState`/`useEffect`. Form and UI-only state (inputs, modals) may use `useState`. JWT token persistence in `localStorage` is client session plumbing, not server state.
 
 ---

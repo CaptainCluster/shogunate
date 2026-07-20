@@ -26,7 +26,7 @@ flowchart LR
     API -- HTTPS --> TVMAZE
 ```
 
-- **Frontend** never talks to TVmaze directly — all metadata fetches are proxied through the backend, which owns the caching/snapshotting behavior.
+- **Frontend** never talks to TVmaze directly — all metadata fetches are proxied through the backend, which owns catalog persistence on add.
 - **Backend** is a single Spring Boot application (no separate microservices) — appropriate given the scope and the "local/dev only for now" deployment target.
 
 ---
@@ -56,7 +56,8 @@ backend/
     │   ├── ShowRepository.java
     │   ├── SeasonRepository.java
     │   ├── EpisodeRepository.java
-    │   ├── Show.java / Season.java / Episode.java   (entities)
+    │   ├── Show.java / Season.java / Episode.java   (global catalog entities)
+    │   ├── UserLibrary.java / UserWatchState.java   (per-user library + watch state)
     │   ├── tvmaze/
     │   │   ├── TvmazeClient.java         (HTTP client to TVmaze)
     │   │   └── TvmazeMapper.java         (TVmaze DTOs -> local entities)
@@ -117,9 +118,11 @@ Every controller endpoint is annotated (`@Operation`, `@ApiResponse`) so the gen
 
 ```mermaid
 erDiagram
-    USERS ||--o{ SHOWS : owns
+    USERS ||--o{ USER_LIBRARY : has
+    SHOWS ||--o{ USER_LIBRARY : referenced_by
     SHOWS ||--o{ SEASONS : has
     SEASONS ||--o{ EPISODES : has
+    USERS ||--o{ USER_WATCH_STATE : tracks
     USERS ||--o{ REVIEWS : writes
     USERS ||--o{ WATCH_EVENTS : logs
     USERS ||--o{ FAVORITES : flags
@@ -132,15 +135,12 @@ erDiagram
     }
     SHOWS {
         uuid id PK
-        uuid user_id FK
-        int tvmaze_id
+        int tvmaze_id UK
         text title
         text overview
         text poster_url
+        text tvmaze_url
         date first_air_date
-        text library_status
-        boolean watched
-        timestamp watched_at
         timestamp created_at
     }
     SEASONS {
@@ -148,8 +148,6 @@ erDiagram
         uuid show_id FK
         int season_number
         text name
-        boolean watched
-        timestamp watched_at
     }
     EPISODES {
         uuid id PK
@@ -157,6 +155,18 @@ erDiagram
         int episode_number
         text title
         date air_date
+    }
+    USER_LIBRARY {
+        uuid id PK
+        uuid user_id FK
+        uuid show_id FK
+        text library_status
+        timestamp added_at
+    }
+    USER_WATCH_STATE {
+        uuid user_id FK
+        text target_type
+        uuid target_id
         boolean watched
         timestamp watched_at
     }
@@ -191,14 +201,16 @@ erDiagram
 ```
 
 ### 3.1 Notes on Types & Constraints
-- `library_status` on `shows`: `'NONE' | 'PLAN_TO_WATCH'` (enforced via check constraint or Postgres enum type).
-- `target_type` (on `reviews`, `watch_events`, `favorites`): `'EPISODE' | 'SEASON' | 'SHOW'` (favorites additionally restricted to `'SEASON' | 'SHOW'` at the application layer).
+- `shows`, `seasons`, `episodes` are a **shared global catalog** keyed by `tvmaze_id` (unique on `shows`). No `user_id` on catalog tables.
+- `user_library` links users to catalog shows: `library_status` is `'NONE' | 'PLAN_TO_WATCH'`.
+- Current watched state lives in `user_watch_state` (per user, per catalog target) — not on catalog rows.
+- `target_type` (on `reviews`, `watch_events`, `favorites`, `user_watch_state`): `'EPISODE' | 'SEASON' | 'SHOW'`.
 - `rating` on `reviews`: `NUMERIC(2,1)`, application-validated to `{0.5, 1.0, 1.5, ..., 5.0}`.
 - `watch_events.action`: `'WATCHED' | 'UNWATCHED'`.
-- `watch_events` is **append-only** — no `UPDATE`/`DELETE` operations are exposed by the repository layer for this table.
-- Unique constraints: `reviews(user_id, target_type, target_id)`, `favorites(user_id, target_type, target_id)` — one review and one favorite-flag per user per target.
-- Indexes: `shows(user_id)`, `seasons(show_id)`, `episodes(season_id)`, `watch_events(user_id, target_type, target_id)`, `watch_events(user_id, occurred_at)` (for period-based analytics queries).
-- All tables except `users` are implicitly scoped by `user_id` (directly or via parent `show_id`/`season_id`), enforced in the repository/service layer on every query — never trusted from client input alone.
+- `watch_events` is **append-only** during normal watch operations.
+- Unique constraints: `user_library(user_id, show_id)`, `reviews(user_id, target_type, target_id)`, `favorites(user_id, target_type, target_id)`.
+- Indexes: `user_library(user_id)`, `seasons(show_id)`, `episodes(season_id)`, `user_watch_state(user_id, target_type, target_id)`.
+- Library access is scoped via `user_library` membership checks on every show detail/list query. Reviews, watch events, and favorites remain scoped by `user_id`. Catalog metadata is shared but never exposed without library membership.
 
 ---
 
@@ -217,14 +229,19 @@ sequenceDiagram
     API-->>FE: search results
 
     FE->>API: POST /api/shows { tvmazeId }
-    API->>TVMAZE: GET /shows/{id} + /shows/{id}/episodes
-    TVMAZE-->>API: full show/episode metadata
-    API->>DB: INSERT show, seasons, episodes (snapshot)
-    API-->>FE: created show (library entry)
+    API->>DB: SELECT show BY tvmaze_id
+    alt catalog missing
+        API->>TVMAZE: GET /shows/{id} + /shows/{id}/episodes
+        TVMAZE-->>API: full show/episode metadata
+        API->>DB: INSERT show, seasons, episodes (global catalog)
+    end
+    API->>DB: INSERT user_library (link user to show)
+    API-->>FE: show detail (catalog + library fields)
 ```
 
-- Search results are never persisted — only a full "add to library" action triggers a snapshot write.
-- The snapshot is a one-time copy; TVmaze is not polled afterward for changes (per PRD assumption #2 — flagged for confirmation).
+- Search results are never persisted — only an explicit "add to library" creates catalog rows (if missing) and a `user_library` link.
+- The catalog is a one-time copy per TVmaze show; TVmaze is not polled afterward for changes (per PRD assumption #2).
+- When the last user removes a show, orphan catalog rows are deleted.
 - `TvmazeClient` is the only component allowed to call out to TVmaze; it sets a descriptive User-Agent and handles rate-limit backoff/retry.
 
 ---
@@ -234,13 +251,13 @@ sequenceDiagram
 Owned entirely by `WatchService`. Two operations, both wrapped in a single DB transaction:
 
 **Mark watched (episode/season/show):**
-1. Set `watched = true`, `watched_at = now()` on the target.
-2. If target is a season or show, recursively apply the same to all children, using the *same* timestamp.
+1. Upsert `user_watch_state` with `watched = true`, `watched_at = now()` for the target (and descendants for season/show).
+2. If target is a season or show, recursively apply the same to all children in `user_watch_state`, using the *same* timestamp.
 3. Write one `watch_events` row per affected row (`action = WATCHED`), marking child rows as `triggered_by_cascade = true` with `cascade_source_id` pointing to the top-level event.
 
 **Unmark watched (episode/season/show):**
 1. Frontend must send an explicit confirmation flag for season/show-level unmark requests (backend rejects without it — see 8.1).
-2. Set `watched = false` on the target and, for season/show, all descendants.
+2. Set `watched = false` in `user_watch_state` for the target and, for season/show, all descendants.
 3. Write corresponding `watch_events` rows (`action = UNWATCHED`) for every affected row, same cascade-tagging rule as above.
 
 ```mermaid

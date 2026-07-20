@@ -1,0 +1,199 @@
+package com.tvtracker.show;
+
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.tvtracker.auth.dto.LoginRequest;
+import com.tvtracker.auth.dto.RegisterRequest;
+import com.tvtracker.show.dto.AddShowRequest;
+import com.tvtracker.show.tvmaze.TvmazeClient;
+import com.tvtracker.show.tvmaze.TvmazeEpisodeDto;
+import com.tvtracker.show.tvmaze.TvmazeImage;
+import com.tvtracker.show.tvmaze.TvmazeShowRef;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
+@SpringBootTest(properties = "spring.profiles.active=test")
+@AutoConfigureMockMvc
+@Testcontainers
+class ShowIntegrationTest {
+
+    @Container
+    @ServiceConnection
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16-alpine")
+            .withDatabaseName("shogunate")
+            .withUsername("shogunate")
+            .withPassword("shogunate");
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Autowired
+    private ShowRepository showRepository;
+
+    @Autowired
+    private SeasonRepository seasonRepository;
+
+    @Autowired
+    private EpisodeRepository episodeRepository;
+
+    @Autowired
+    private UserLibraryRepository userLibraryRepository;
+
+    @MockitoBean
+    private TvmazeClient tvmazeClient;
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void resetDatabaseAndStubTvmaze() {
+        userLibraryRepository.deleteAll();
+        episodeRepository.deleteAll();
+        seasonRepository.deleteAll();
+        showRepository.deleteAll();
+
+        when(tvmazeClient.fetchShow(anyInt())).thenAnswer(invocation -> {
+            int id = invocation.getArgument(0);
+            return new TvmazeShowRef(
+                    id,
+                    "Show " + id,
+                    "<p>Summary</p>",
+                    new TvmazeImage("poster.jpg", "poster-large.jpg"),
+                    "2008-01-20",
+                    "https://www.tvmaze.com/shows/" + id);
+        });
+        when(tvmazeClient.fetchEpisodes(anyInt()))
+                .thenReturn(List.of(new TvmazeEpisodeDto(1, "Pilot", 1, 1, "2008-01-20")));
+    }
+
+    @Test
+    void firstAddCreatesCatalogSecondUserReusesWithoutTvmazeCall() throws Exception {
+        int tvmazeId = 82;
+        String userOneToken = registerAndLogin("catalog_user_one");
+        String userTwoToken = registerAndLogin("catalog_user_two");
+
+        mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + userOneToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated());
+
+        verify(tvmazeClient, times(1)).fetchShow(tvmazeId);
+        verify(tvmazeClient, times(1)).fetchEpisodes(tvmazeId);
+
+        mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + userTwoToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated());
+
+        verify(tvmazeClient, times(1)).fetchShow(tvmazeId);
+        verify(tvmazeClient, times(1)).fetchEpisodes(tvmazeId);
+    }
+
+    @Test
+    void duplicateAddReturns409() throws Exception {
+        int tvmazeId = 90;
+        String token = registerAndLogin("duplicate_user");
+
+        mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void removeByOneUserPreservesCatalogForOtherOrphanDeletesWhenLastRemoved() throws Exception {
+        int tvmazeId = 100;
+        String userOneToken = registerAndLogin("remove_user_one");
+        String userTwoToken = registerAndLogin("remove_user_two");
+
+        MvcResult addResult = mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + userOneToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String showId = objectMapper
+                .readTree(addResult.getResponse().getContentAsString())
+                .get("id")
+                .asText();
+
+        mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + userTwoToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(delete("/api/shows/" + showId).header("Authorization", "Bearer " + userOneToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + userOneToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated());
+
+        verify(tvmazeClient, times(1)).fetchShow(tvmazeId);
+
+        mockMvc.perform(delete("/api/shows/" + showId).header("Authorization", "Bearer " + userOneToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(delete("/api/shows/" + showId).header("Authorization", "Bearer " + userTwoToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + userTwoToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated());
+
+        verify(tvmazeClient, times(2)).fetchShow(tvmazeId);
+    }
+
+    private String registerAndLogin(String username) throws Exception {
+        RegisterRequest registerRequest = new RegisterRequest(username, "password123");
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerRequest)))
+                .andExpect(status().isCreated());
+
+        LoginRequest loginRequest = new LoginRequest(username, "password123");
+        MvcResult loginResult = mockMvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return objectMapper
+                .readTree(loginResult.getResponse().getContentAsString())
+                .get("token")
+                .asText();
+    }
+}

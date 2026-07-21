@@ -1,3 +1,8 @@
+/*
+ * Shogunate - TV Show Tracker
+ * Copyright (C) 2026 Ville Saloranta
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'

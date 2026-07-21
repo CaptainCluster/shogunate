@@ -16,4 +16,6 @@ public record ShowDetailResponse(
         LocalDate firstAirDate,
         LibraryStatus libraryStatus,
         Instant addedAt,
+        boolean watched,
+        Instant watchedAt,
         List<SeasonResponse> seasons) {}

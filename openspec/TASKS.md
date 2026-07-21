@@ -12,6 +12,8 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ---
 
+
+
 ## Phase 0: Foundation & Setup
 
 - [x] **0.1 — Repo scaffolding**
@@ -40,11 +42,13 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ---
 
+
+
 ## Phase 1: Authentication
 
 > Revised by the `username-auth` OpenSpec change: auth uses username + password only (no email verification or password reset). Frontend auth uses TanStack Query hooks (`frontend-tanstack-auth`).
 
-- [x] **1.1 — `users` table (migration)**
+- [x] **1.1 —** `users` **table (migration)**
   Flyway migration for `users` with `username` (unique, case-insensitive lookup).
   *Ref: Architecture §3*
 
@@ -53,7 +57,7 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   *Acceptance:* `POST /api/auth/register` creates a user; `POST /api/auth/login` returns a JWT for valid credentials.
   *Ref: PRD §5.1; Architecture §2.1, §8.1*
 
-- [x] **1.3 — JWT auth filter + `CurrentUserResolver` (backend)**
+- [x] **1.3 — JWT auth filter +** `CurrentUserResolver` **(backend)**
   Every authenticated endpoint resolves the current user from the token; no endpoint accepts a client-supplied user ID.
   *Acceptance:* Requests without a valid token return `401`; a manually-crafted request with someone else's ID in the body/path still only ever operates on the token's user.
   *Ref: Architecture §8.1*
@@ -68,6 +72,8 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   *Ref: Architecture §8.3*
 
 ---
+
+
 
 ## Phase 2: Show Discovery & Library
 
@@ -108,12 +114,16 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ---
 
+
+
 ## Phase 3: Watch Tracking
 
 > `user_watch_state` table and entity already exist (Phase 2 / V4). Phase 3 adds immutable `watch_events` history and `WatchService` cascade logic that updates both `user_watch_state` and `watch_events`. Targets reference shared catalog IDs scoped by `user_id`.
+>
+> **Backend change:** `watch-tracking-backend` implements 3.1–3.4 and the backend portion of 3.6. **Frontend (3.5) is deferred** to a separate change after the backend APIs ship.
 
-- [ ] **3.1 — `watch_events` table (migration)**
-  Append-only history log; no update/delete exposed at the repository layer during normal operations.
+- [ ] **3.1 —** `watch_events` **table (migration)**
+  Append-only history log during normal watch/unwatch; bulk delete permitted only on library removal.
   *Ref: Architecture §3*
 
 - [ ] **3.2 — Mark-watched cascade (backend)**
@@ -130,20 +140,27 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   `POST`/`DELETE` under `/api/watch/episodes/{id}`, `/api/watch/seasons/{id}`, `/api/watch/shows/{id}`.
   *Ref: Architecture §2.1 (package layout)*
 
-- [ ] **3.5 — Watch controls + confirmation modal (frontend)**
+- [ ] **3.4b — Show detail watch state (backend)**
+  `GET /api/shows/{id}` includes `watched` and `watchedAt` on show, season, and episode for the authenticated user.
+  *Acceptance:* Unwatched targets default to `watched=false`; after mark operations, detail reflects current state without separate watch GET endpoints.
+  *Ref: Architecture §2.1; prepares Phase 3.5 frontend*
+
+- [ ] **3.5 — Watch controls + confirmation modal (frontend)** *(deferred — separate change)*
   Mark/unmark buttons at episode/season/show level; `useConfirm` modal wired to season/show unmark actions; TanStack Query cache invalidation covering the target and all its ancestors/descendants.
   *Acceptance:* Unmarking a season in the UI prompts for confirmation before firing the request; after a cascade action, all affected rows update in the UI without a manual refresh.
   *Ref: PRD §5.3; Architecture §7.2, §7.3*
 
-- [ ] **3.6 — Tests**
-  Unit tests for cascade logic (mark and unmark, including partial-failure rollback). Integration tests for the confirm-flag requirement.
+- [ ] **3.6 — Tests (backend)**
+  Unit tests for cascade logic (mark and unmark, including partial-failure rollback). Integration tests for the confirm-flag requirement and cross-user isolation. JaCoCo ≥ 80% line coverage enforced in `./gradlew check` (local gate; no SonarQube server).
   *Ref: Architecture §8.3*
 
 ---
 
+
+
 ## Phase 4: Reviews & Ratings
 
-- [ ] **4.1 — `reviews` table (migration)**
+- [ ] **4.1 —** `reviews` **table (migration)**
   Unique on `(user_id, target_type, target_id)`; targets reference shared catalog entities.
   *Ref: Architecture §3*
 
@@ -162,11 +179,13 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ---
 
+
+
 ## Phase 5: Favorites
 
-- [ ] **5.1 — `favorites` table (migration)**
+- [ ] **5.1 —** `favorites` **table (migration)**
   Unique on `(user_id, target_type, target_id)`; `target_type` restricted to `SHOW`/`SEASON` at the application layer.
-  *Ref: Architecture §3, and the earlier discussion of the `target_type` discriminator pattern*
+  *Ref: Architecture §3, and the earlier discussion of the* `target_type` *discriminator pattern*
 
 - [ ] **5.2 — Favorite auto-suggestion + manual override (backend)**
   `AnalyticsService` (or `FavoriteService`, reading from reviews) computes auto-suggested favorites by average rating; `FavoriteController` exposes manual flag/unflag via `POST`/`DELETE /api/favorites`.
@@ -182,6 +201,8 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   *Ref: Architecture §8.3*
 
 ---
+
+
 
 ## Phase 6: Analytics
 
@@ -207,6 +228,8 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ---
 
+
+
 ## Phase 7: Cross-Cutting Polish
 
 - [ ] **7.1 — Security review**
@@ -227,10 +250,14 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ---
 
+
+
 ## Notes on Sequencing
 
 - Phases are ordered by dependency: Auth must exist before anything user-scoped; Show/library must exist before Watch, Reviews, or Favorites can attach to anything; Analytics depends on Watch, Reviews, and Favorites all being in place.
 - Within each phase, backend tasks precede frontend tasks, since the frontend integrates against a working API.
+
+
 
 ### Resolved decisions (formerly open in PRD §9 / Architecture §4)
 
@@ -238,6 +265,9 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 - **Remove from library:** Delete user-scoped data and the `user_library` row; orphan-delete global catalog when no users remain; preserve catalog for other users.
 - **Metadata freshness:** One-time TVmaze snapshot at first catalog create; no live sync afterward.
 
+
+
 ### Remaining open assumption
 
 - **Plan to Watch scope:** Currently implemented at show level only (`user_library.library_status`). Confirm this remains the intended product scope before extending status to seasons/episodes.
+

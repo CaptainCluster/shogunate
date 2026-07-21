@@ -9,8 +9,6 @@ import com.tvtracker.common.exception.ValidationException;
 import com.tvtracker.common.security.JwtTokenProvider;
 import java.time.Instant;
 import java.util.UUID;
-
-import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

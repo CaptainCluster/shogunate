@@ -9,23 +9,19 @@ import com.tvtracker.common.exception.ValidationException;
 import com.tvtracker.common.security.JwtTokenProvider;
 import java.time.Instant;
 import java.util.UUID;
+
+import jakarta.annotation.Resource;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
-
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
-
-    public AuthService(
-            UserRepository userRepository, PasswordEncoder passwordEncoder, JwtTokenProvider jwtTokenProvider) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtTokenProvider = jwtTokenProvider;
-    }
 
     @Transactional
     public void register(RegisterRequest request) {
@@ -35,7 +31,12 @@ public class AuthService {
         }
 
         Instant now = Instant.now();
-        User user = new User(UUID.randomUUID(), username, passwordEncoder.encode(request.password()), now);
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .username(username)
+                .passwordHash(passwordEncoder.encode(request.password()))
+                .createdAt(now)
+                .build();
         userRepository.save(user);
     }
 

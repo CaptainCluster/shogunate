@@ -1,5 +1,8 @@
 package com.tvtracker.common.exception;
 
+import lombok.Getter;
+
+@Getter
 public class ApiException extends RuntimeException {
 
     private final int status;
@@ -7,9 +10,5 @@ public class ApiException extends RuntimeException {
     public ApiException(String message, int status) {
         super(message);
         this.status = status;
-    }
-
-    public int getStatus() {
-        return status;
     }
 }

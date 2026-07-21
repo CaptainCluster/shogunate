@@ -1,0 +1,87 @@
+---
+description: Backend Java developer for Shogunate — Spring Boot feature slices, Lombok conventions, and project coding standards
+globs: backend/**/*.java
+alwaysApply: false
+---
+
+# Backend Developer
+
+You are a backend developer working in `/backend` (Spring Boot 4, Java 21, Gradle). Follow `openspec/AGENTS.md` for domain constraints, package layout, and workflow. This rule adds Java/Lombok conventions for day-to-day implementation.
+
+## Project layout
+
+- Feature-based vertical slices: `auth/`, `show/`, `watch/`, etc. Each owns controller → service → repository → entity/dto.
+- Shared code only in `common/` or `config/`.
+- Run `./gradlew spotlessApply` and resolve Checkstyle violations before finishing work.
+
+## Lombok — required for new and refactored classes
+
+Use Lombok instead of hand-written constructors, getters, and boilerplate `equals`/`hashCode` where applicable. Add the Lombok dependency to Gradle if it is not already present.
+
+### JPA entities (`@Entity`)
+
+```java
+@Entity
+@Table(name = "shows")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class Show {
+    @Id
+    private UUID id;
+    // fields...
+}
+```
+
+- **`@NoArgsConstructor(access = PROTECTED)`** — required for JPA; never omit on entities.
+- **`@AllArgsConstructor`** — canonical full-field constructor; prefer over writing one by hand.
+- **`@Getter`** — use instead of manual getters. Add `@Setter` only on fields that are genuinely mutable after creation.
+- **`@Builder(toBuilder = true)`** — always enable `toBuilder` on entities and mutable domain objects.
+- **Do not use `@Data` or `@EqualsAndHashCode` on entities** — JPA identity and lazy loading make these unsafe.
+
+### DTOs and value objects
+
+- **Simple immutable API responses** — prefer Java `record` when there is no need for copy-and-tweak (see existing `ShowSummaryResponse`).
+- **Classes that need partial copies or staged construction** — use Lombok:
+
+```java
+@Getter
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class SomeDto {
+    private final UUID id;
+    private final String title;
+}
+```
+
+- **Exceptions and small config holders** — `@Getter` + `@AllArgsConstructor` is enough; add `@Builder(toBuilder = true)` when instances are built incrementally.
+
+## Prefer `toBuilder()` over `new ClassObj(...)`
+
+When creating a variant of an existing object, **always** use `toBuilder()` instead of repeating all constructor arguments.
+
+```java
+// ✅ GOOD — only the changed fields are visible
+var updated = state.toBuilder()
+        .watched(true)
+        .watchedAt(Instant.now())
+        .build();
+
+// ❌ BAD — brittle, hides intent, breaks when fields are added
+var updated = new UserWatchState(
+        state.getUserId(),
+        state.getTargetType(),
+        state.getTargetId(),
+        true,
+        Instant.now());
+```
+
+Use `SomeClass.builder()...build()` (or `@AllArgsConstructor` for one-off creation with no source object) when there is **no existing instance** to copy from.
+
+## General Java conventions
+
+- Inject dependencies via constructor injection; use `@RequiredArgsConstructor` on Spring components (`@Service`, `@Component`, etc.) with `final` fields.
+- Keep business rules in services, not controllers or repositories.
+- Scope every user-owned query to the authenticated user from the JWT — never trust a user ID from the request body/path.
+- Validate input with Jakarta Bean Validation on request DTOs/records.

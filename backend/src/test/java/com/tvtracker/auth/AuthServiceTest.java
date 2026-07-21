@@ -16,16 +16,20 @@ import com.tvtracker.common.security.JwtTokenProvider;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+
+import jakarta.annotation.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
+    private static final String TEST_USER = "testuser";
 
     @Mock
     private UserRepository userRepository;
@@ -36,16 +40,12 @@ class AuthServiceTest {
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
+    @InjectMocks
     private AuthService authService;
-
-    @BeforeEach
-    void setUp() {
-        authService = new AuthService(userRepository, passwordEncoder, jwtTokenProvider);
-    }
 
     @Test
     void registerCreatesUserWithNormalizedUsername() {
-        when(userRepository.existsByUsernameIgnoreCase("testuser")).thenReturn(false);
+        when(userRepository.existsByUsernameIgnoreCase(TEST_USER)).thenReturn(false);
         when(passwordEncoder.encode("password123")).thenReturn("hash");
 
         authService.register(new RegisterRequest("TestUser", "password123"));
@@ -53,39 +53,49 @@ class AuthServiceTest {
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
         User saved = userCaptor.getValue();
-        assertEquals("testuser", saved.getUsername());
+        assertEquals(TEST_USER, saved.getUsername());
     }
 
     @Test
     void registerRejectsDuplicateUsername() {
-        when(userRepository.existsByUsernameIgnoreCase("testuser")).thenReturn(true);
+        when(userRepository.existsByUsernameIgnoreCase(TEST_USER)).thenReturn(true);
 
         assertThrows(
-                ValidationException.class, () -> authService.register(new RegisterRequest("testuser", "password123")));
+                ValidationException.class, () -> authService.register(new RegisterRequest(TEST_USER, "password123")));
         verify(userRepository, never()).save(any());
     }
 
     @Test
     void loginReturnsTokenForValidCredentials() {
-        User user = new User(UUID.randomUUID(), "testuser", "hash", Instant.now());
-        when(userRepository.findByUsernameIgnoreCase("testuser")).thenReturn(Optional.of(user));
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .username(TEST_USER)
+                .passwordHash("hash")
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findByUsernameIgnoreCase(TEST_USER)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("password123", "hash")).thenReturn(true);
-        when(jwtTokenProvider.createToken(user.getId(), "testuser")).thenReturn("jwt-token");
+        when(jwtTokenProvider.createToken(user.getId(), TEST_USER)).thenReturn("jwt-token");
 
         var response = authService.login(new LoginRequest("TestUser", "password123"));
 
         assertEquals("jwt-token", response.token());
-        assertEquals("testuser", response.username());
-        verify(jwtTokenProvider).createToken(user.getId(), "testuser");
+        assertEquals(TEST_USER, response.username());
+        verify(jwtTokenProvider).createToken(user.getId(), TEST_USER);
     }
 
     @Test
     void loginRejectsInvalidPassword() {
-        User user = new User(UUID.randomUUID(), "testuser", "hash", Instant.now());
-        when(userRepository.findByUsernameIgnoreCase("testuser")).thenReturn(Optional.of(user));
+        User user = User.builder()
+                .id(UUID.randomUUID())
+                .username(TEST_USER)
+                .passwordHash("hash")
+                .createdAt(Instant.now())
+                .build();
+        when(userRepository.findByUsernameIgnoreCase(TEST_USER)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrong", "hash")).thenReturn(false);
 
-        assertThrows(UnauthorizedException.class, () -> authService.login(new LoginRequest("testuser", "wrong")));
-        verify(jwtTokenProvider, never()).createToken(any(), eq("testuser"));
+        assertThrows(UnauthorizedException.class, () -> authService.login(new LoginRequest(TEST_USER, "wrong")));
+        verify(jwtTokenProvider, never()).createToken(any(), eq(TEST_USER));
     }
 }

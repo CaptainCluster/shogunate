@@ -10,12 +10,21 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import java.io.Serializable;
 import java.time.Instant;
-import java.util.Objects;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "user_watch_state")
 @IdClass(UserWatchState.UserWatchStateId.class)
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class UserWatchState {
 
     @Id
@@ -37,66 +46,14 @@ public class UserWatchState {
     @Column(name = "watched_at")
     private Instant watchedAt;
 
-    protected UserWatchState() {}
-
-    public UserWatchState(UUID userId, TargetType targetType, UUID targetId, boolean watched, Instant watchedAt) {
-        this.userId = userId;
-        this.targetType = targetType;
-        this.targetId = targetId;
-        this.watched = watched;
-        this.watchedAt = watchedAt;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public TargetType getTargetType() {
-        return targetType;
-    }
-
-    public UUID getTargetId() {
-        return targetId;
-    }
-
-    public boolean isWatched() {
-        return watched;
-    }
-
-    public Instant getWatchedAt() {
-        return watchedAt;
-    }
-
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @EqualsAndHashCode
     public static class UserWatchStateId implements Serializable {
 
         private UUID userId;
         private TargetType targetType;
         private UUID targetId;
-
-        public UserWatchStateId() {}
-
-        public UserWatchStateId(UUID userId, TargetType targetType, UUID targetId) {
-            this.userId = userId;
-            this.targetType = targetType;
-            this.targetId = targetId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (!(o instanceof UserWatchStateId that)) {
-                return false;
-            }
-            return Objects.equals(userId, that.userId)
-                    && targetType == that.targetType
-                    && Objects.equals(targetId, that.targetId);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(userId, targetType, targetId);
-        }
     }
 }

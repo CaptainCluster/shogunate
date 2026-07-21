@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,13 +25,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/shows")
+@RequiredArgsConstructor
 public class ShowController {
 
     private final ShowService showService;
-
-    public ShowController(ShowService showService) {
-        this.showService = showService;
-    }
 
     @GetMapping("/search")
     @Operation(summary = "Search TVmaze for shows (results are not persisted)")

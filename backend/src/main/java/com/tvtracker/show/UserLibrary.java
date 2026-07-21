@@ -8,9 +8,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "user_library")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class UserLibrary {
 
     @Id
@@ -28,38 +37,4 @@ public class UserLibrary {
 
     @Column(name = "added_at", nullable = false)
     private Instant addedAt;
-
-    protected UserLibrary() {}
-
-    public UserLibrary(UUID id, UUID userId, UUID showId, LibraryStatus libraryStatus, Instant addedAt) {
-        this.id = id;
-        this.userId = userId;
-        this.showId = showId;
-        this.libraryStatus = libraryStatus;
-        this.addedAt = addedAt;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getUserId() {
-        return userId;
-    }
-
-    public UUID getShowId() {
-        return showId;
-    }
-
-    public LibraryStatus getLibraryStatus() {
-        return libraryStatus;
-    }
-
-    public Instant getAddedAt() {
-        return addedAt;
-    }
-
-    public void setLibraryStatus(LibraryStatus libraryStatus) {
-        this.libraryStatus = libraryStatus;
-    }
 }

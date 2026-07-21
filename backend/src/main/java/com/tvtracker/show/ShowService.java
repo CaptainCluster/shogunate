@@ -1,5 +1,6 @@
 package com.tvtracker.show;
 
+import com.tvtracker.common.TargetType;
 import com.tvtracker.common.exception.ConflictException;
 import com.tvtracker.common.exception.NotFoundException;
 import com.tvtracker.show.dto.EpisodeResponse;
@@ -11,10 +12,15 @@ import com.tvtracker.show.tvmaze.TvmazeClient;
 import com.tvtracker.show.tvmaze.TvmazeMapper;
 import com.tvtracker.show.tvmaze.TvmazeSearchResult;
 import com.tvtracker.show.tvmaze.TvmazeShowRef;
+import com.tvtracker.watch.UserWatchState;
+import com.tvtracker.watch.UserWatchStateRepository;
+import com.tvtracker.watch.WatchEventRepository;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +37,7 @@ public class ShowService {
     private final EpisodeRepository episodeRepository;
     private final UserLibraryRepository userLibraryRepository;
     private final UserWatchStateRepository userWatchStateRepository;
+    private final WatchEventRepository watchEventRepository;
 
     public List<ShowSearchResult> search(String query) {
         if (query == null || query.isBlank()) {
@@ -81,17 +88,21 @@ public class ShowService {
 
         Show show = showRepository.findById(showId).orElseThrow(() -> new NotFoundException("Show not found"));
 
+        Set<UUID> targetIds = collectHierarchyTargetIds(showId);
+        Map<WatchStateKey, UserWatchState> watchStates = loadWatchStates(userId, targetIds);
+
         List<Season> seasons = seasonRepository.findByShowIdOrderBySeasonNumberAsc(showId);
         List<SeasonResponse> seasonResponses = seasons.stream()
                 .map(season -> {
                     List<EpisodeResponse> episodes =
                             episodeRepository.findBySeasonIdOrderByEpisodeNumberAsc(season.getId()).stream()
-                                    .map(ep -> new EpisodeResponse(
-                                            ep.getId(), ep.getEpisodeNumber(), ep.getTitle(), ep.getAirDate()))
+                                    .map(ep -> toEpisodeResponse(ep, watchStates))
                                     .toList();
-                    return new SeasonResponse(season.getId(), season.getSeasonNumber(), season.getName(), episodes);
+                    return toSeasonResponse(season, watchStates, episodes);
                 })
                 .toList();
+
+        WatchState showState = resolveWatchState(watchStates, TargetType.SHOW, showId);
 
         return new ShowDetailResponse(
                 show.getId(),
@@ -103,6 +114,8 @@ public class ShowService {
                 show.getFirstAirDate(),
                 entry.getLibraryStatus(),
                 entry.getAddedAt(),
+                showState.watched(),
+                showState.watchedAt(),
                 seasonResponses);
     }
 
@@ -118,17 +131,6 @@ public class ShowService {
         return toSummary(show, updated);
     }
 
-    /**
-     * Removes a show from the user's library and cleans up user-scoped data.
-     *
-     * <p>Future hooks when watch/review/favorite tables exist:
-     *
-     * <ul>
-     *   <li>DELETE FROM reviews WHERE user_id = ? AND target_id IN (hierarchy ids)
-     *   <li>DELETE FROM favorites WHERE user_id = ? AND target_id IN (hierarchy ids)
-     *   <li>DELETE FROM watch_events WHERE user_id = ? AND target_id IN (hierarchy ids)
-     * </ul>
-     */
     @Transactional
     public void removeFromLibrary(UUID userId, UUID showId) {
         UserLibrary entry = userLibraryRepository
@@ -137,7 +139,8 @@ public class ShowService {
 
         Set<UUID> targetIds = collectHierarchyTargetIds(showId);
         userWatchStateRepository.deleteByUserIdAndTargetIdIn(userId, targetIds);
-        // Future: delete reviews, favorites, watch_events for userId + targetIds
+        watchEventRepository.deleteByUserIdAndTargetIdIn(userId, targetIds);
+        // Future: delete reviews, favorites for userId + targetIds
 
         userLibraryRepository.delete(entry);
 
@@ -175,6 +178,48 @@ public class ShowService {
         return targetIds;
     }
 
+    private Map<WatchStateKey, UserWatchState> loadWatchStates(UUID userId, Set<UUID> targetIds) {
+        if (targetIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<WatchStateKey, UserWatchState> states = new HashMap<>();
+        userWatchStateRepository
+                .findByUserIdAndTargetIdIn(userId, targetIds)
+                .forEach(state -> states.put(new WatchStateKey(state.getTargetType(), state.getTargetId()), state));
+        return states;
+    }
+
+    private EpisodeResponse toEpisodeResponse(Episode episode, Map<WatchStateKey, UserWatchState> watchStates) {
+        WatchState state = resolveWatchState(watchStates, TargetType.EPISODE, episode.getId());
+        return new EpisodeResponse(
+                episode.getId(),
+                episode.getEpisodeNumber(),
+                episode.getTitle(),
+                episode.getAirDate(),
+                state.watched(),
+                state.watchedAt());
+    }
+
+    private SeasonResponse toSeasonResponse(
+            Season season, Map<WatchStateKey, UserWatchState> watchStates, List<EpisodeResponse> episodes) {
+        WatchState state = resolveWatchState(watchStates, TargetType.SEASON, season.getId());
+        return new SeasonResponse(
+                season.getId(),
+                season.getSeasonNumber(),
+                season.getName(),
+                state.watched(),
+                state.watchedAt(),
+                episodes);
+    }
+
+    private WatchState resolveWatchState(Map<WatchStateKey, UserWatchState> watchStates, TargetType type, UUID id) {
+        UserWatchState state = watchStates.get(new WatchStateKey(type, id));
+        if (state == null || !state.isWatched()) {
+            return new WatchState(false, null);
+        }
+        return new WatchState(true, state.getWatchedAt());
+    }
+
     private void deleteOrphanCatalog(UUID showId) {
         List<Season> seasons = seasonRepository.findByShowIdOrderBySeasonNumberAsc(showId);
         List<UUID> seasonIds = seasons.stream().map(Season::getId).toList();
@@ -207,4 +252,8 @@ public class ShowService {
                 entry.getLibraryStatus(),
                 entry.getAddedAt());
     }
+
+    private record WatchStateKey(TargetType targetType, UUID targetId) {}
+
+    private record WatchState(boolean watched, Instant watchedAt) {}
 }

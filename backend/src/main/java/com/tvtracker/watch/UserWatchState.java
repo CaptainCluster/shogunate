@@ -1,4 +1,4 @@
-package com.tvtracker.show;
+package com.tvtracker.watch;
 
 import com.tvtracker.common.TargetType;
 import jakarta.persistence.Column;

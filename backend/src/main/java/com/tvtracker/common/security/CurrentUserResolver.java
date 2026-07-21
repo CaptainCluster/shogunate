@@ -1,7 +1,6 @@
 package com.tvtracker.common.security;
 
 import java.util.UUID;
-
 import org.jspecify.annotations.NonNull;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;

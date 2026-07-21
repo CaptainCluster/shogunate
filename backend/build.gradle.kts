@@ -10,6 +10,8 @@ plugins {
 group = "com.tvtracker"
 version = "1.0-SNAPSHOT"
 
+extra["license"] = "GPL-3.0"
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -87,6 +89,20 @@ tasks.jacocoTestCoverageVerification {
 
 tasks.check {
     dependsOn(tasks.jacocoTestCoverageVerification)
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    manifest {
+        attributes(
+            "Implementation-Title" to "Shogunate",
+            "Implementation-Vendor" to "Ville Saloranta",
+            "Implementation-License" to "GPL-3.0",
+        )
+    }
+    from("../NOTICE.md") {
+        into("META-INF")
+        rename { "NOTICE" }
+    }
 }
 
 spotless {

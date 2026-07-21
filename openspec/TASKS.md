@@ -122,25 +122,25 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 >
 > **Backend change:** `watch-tracking-backend` implements 3.1–3.4 and the backend portion of 3.6. **Frontend (3.5) is deferred** to a separate change after the backend APIs ship.
 
-- [ ] **3.1 —** `watch_events` **table (migration)**
+- [x] **3.1 —** `watch_events` **table (migration)**
   Append-only history log during normal watch/unwatch; bulk delete permitted only on library removal.
   *Ref: Architecture §3*
 
-- [ ] **3.2 — Mark-watched cascade (backend)**
+- [x] **3.2 — Mark-watched cascade (backend)**
   `WatchService`: upsert `user_watch_state` for the target (and descendants for season/show) with a shared timestamp; write one `watch_events` row per affected row, all in a single transaction.
   *Acceptance:* Marking a show watched results in every episode/season under it being watched with the same `watched_at`, and one `watch_events` row per affected episode/season/show, correctly tagged with `triggered_by_cascade`.
   *Ref: PRD §5.3; Architecture §5*
 
-- [ ] **3.3 — Unmark-watched cascade with confirmation (backend)**
+- [x] **3.3 — Unmark-watched cascade with confirmation (backend)**
   Season/show-level unmark requires `confirm=true`; missing it returns `400`. Cascades down to children, updating `user_watch_state` and logging to `watch_events` in one transaction.
   *Acceptance:* Unmarking a show without `confirm=true` is rejected; with it, the show and all its seasons/episodes become unwatched, each logged.
   *Ref: PRD §5.3; Architecture §5, §8.1*
 
-- [ ] **3.4 — Watch endpoints (backend)**
+- [x] **3.4 — Watch endpoints (backend)**
   `POST`/`DELETE` under `/api/watch/episodes/{id}`, `/api/watch/seasons/{id}`, `/api/watch/shows/{id}`.
   *Ref: Architecture §2.1 (package layout)*
 
-- [ ] **3.4b — Show detail watch state (backend)**
+- [x] **3.4b — Show detail watch state (backend)**
   `GET /api/shows/{id}` includes `watched` and `watchedAt` on show, season, and episode for the authenticated user.
   *Acceptance:* Unwatched targets default to `watched=false`; after mark operations, detail reflects current state without separate watch GET endpoints.
   *Ref: Architecture §2.1; prepares Phase 3.5 frontend*
@@ -150,7 +150,7 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   *Acceptance:* Unmarking a season in the UI prompts for confirmation before firing the request; after a cascade action, all affected rows update in the UI without a manual refresh.
   *Ref: PRD §5.3; Architecture §7.2, §7.3*
 
-- [ ] **3.6 — Tests (backend)**
+- [x] **3.6 — Tests (backend)**
   Unit tests for cascade logic (mark and unmark, including partial-failure rollback). Integration tests for the confirm-flag requirement and cross-user isolation. JaCoCo ≥ 80% line coverage enforced in `./gradlew check` (local gate; no SonarQube server).
   *Ref: Architecture §8.3*
 

@@ -117,10 +117,10 @@ When a user removes a show from their library and no other users have that show 
 - AND the global catalog rows remain available for the other user
 
 ### Requirement: Remove Show from Library
-The system SHALL allow a user to remove a show from their library. Removal MUST remove that user's library entry and that user's watch state, watch history, reviews, and favorite flags associated with that show. Removal MUST NOT affect any other user's data. When no users remain linked to the show, the global catalog show and its seasons and episodes MUST be deleted.
+The system SHALL allow a user to remove a show from their library. Removal MUST remove that user's library entry and that user's watch state, watch history log entries, reviews, and favorite flags associated with that show. Removal MUST NOT affect any other user's data. When no users remain linked to the show, the global catalog show and its seasons and episodes MUST be deleted.
 
 #### Scenario: Removing a show cleans up user-scoped data
-- GIVEN a show in a user's library with associated reviews, watch history, watch state, or favorite flags
+- GIVEN a show in a user's library with associated reviews, watch history log entries, watch state, or favorite flags
 - WHEN the user removes the show
 - THEN the user's library entry and all of that user's data for the show hierarchy are removed
 - AND no other user's library or data is affected
@@ -134,3 +134,17 @@ The system SHALL allow a user to remove a show from their library. Removal MUST 
 - GIVEN a show with library entries for multiple users
 - WHEN one user removes the show
 - THEN the global catalog remains for users who still have the show in their library
+
+### Requirement: Show Detail Includes Watch State
+When a user requests show detail for a show in their library, the response SHALL include the user's current watched state and watched timestamp for the show, each season, and each episode.
+
+#### Scenario: Unwatched episode shows default state
+- GIVEN an authenticated user requests show detail for a show in their library
+- AND the user has not marked an episode watched
+- WHEN the user views show detail
+- THEN that episode is reported as unwatched with no watched timestamp
+
+#### Scenario: Watched targets reflect current state
+- GIVEN an authenticated user requests show detail after marking a season watched
+- WHEN the user views show detail
+- THEN the season and its episodes are reported as watched with timestamps matching the mark operation

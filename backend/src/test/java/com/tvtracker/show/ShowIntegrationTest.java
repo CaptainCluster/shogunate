@@ -5,7 +5,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,6 +18,8 @@ import com.tvtracker.show.tvmaze.TvmazeClient;
 import com.tvtracker.show.tvmaze.TvmazeEpisodeDto;
 import com.tvtracker.show.tvmaze.TvmazeImage;
 import com.tvtracker.show.tvmaze.TvmazeShowRef;
+import com.tvtracker.watch.UserWatchStateRepository;
+import com.tvtracker.watch.WatchEventRepository;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -58,6 +62,12 @@ class ShowIntegrationTest {
     @Autowired
     private UserLibraryRepository userLibraryRepository;
 
+    @Autowired
+    private WatchEventRepository watchEventRepository;
+
+    @Autowired
+    private UserWatchStateRepository userWatchStateRepository;
+
     @MockitoBean
     private TvmazeClient tvmazeClient;
 
@@ -65,6 +75,8 @@ class ShowIntegrationTest {
 
     @BeforeEach
     void resetDatabaseAndStubTvmaze() {
+        watchEventRepository.deleteAll();
+        userWatchStateRepository.deleteAll();
         userLibraryRepository.deleteAll();
         episodeRepository.deleteAll();
         seasonRepository.deleteAll();
@@ -175,6 +187,67 @@ class ShowIntegrationTest {
                 .andExpect(status().isCreated());
 
         verify(tvmazeClient, times(2)).fetchShow(tvmazeId);
+    }
+
+    @Test
+    void getShowDetailIncludesWatchState() throws Exception {
+        int tvmazeId = 110;
+        String token = registerAndLogin("show_detail_watch");
+
+        MvcResult addResult = mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        var root = objectMapper.readTree(addResult.getResponse().getContentAsString());
+        String showId = root.get("id").asText();
+        String episodeId =
+                root.get("seasons").get(0).get("episodes").get(0).get("id").asText();
+
+        mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.watched").value(false))
+                .andExpect(jsonPath("$.seasons[0].episodes[0].watched").value(false));
+
+        mockMvc.perform(post("/api/watch/episodes/" + episodeId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.seasons[0].episodes[0].watched").value(true))
+                .andExpect(jsonPath("$.seasons[0].episodes[0].watchedAt").exists());
+    }
+
+    @Test
+    void removeFromLibraryDeletesWatchData() throws Exception {
+        int tvmazeId = 111;
+        String token = registerAndLogin("show_remove_watch");
+
+        MvcResult addResult = mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        var root = objectMapper.readTree(addResult.getResponse().getContentAsString());
+        String showId = root.get("id").asText();
+        String episodeId =
+                root.get("seasons").get(0).get("episodes").get(0).get("id").asText();
+
+        mockMvc.perform(post("/api/watch/episodes/" + episodeId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        org.junit.jupiter.api.Assertions.assertEquals(1, watchEventRepository.count());
+        org.junit.jupiter.api.Assertions.assertEquals(1, userWatchStateRepository.count());
+
+        mockMvc.perform(delete("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        org.junit.jupiter.api.Assertions.assertEquals(0, watchEventRepository.count());
+        org.junit.jupiter.api.Assertions.assertEquals(0, userWatchStateRepository.count());
     }
 
     private String registerAndLogin(String username) throws Exception {

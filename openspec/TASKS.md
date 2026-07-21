@@ -1,36 +1,40 @@
 # Implementation Tasks: TV Show Tracker
 
-> **Status: historical reference.** This document reflects the original planned build order and is not updated as work proceeds. Actual implementation is tracked via OpenSpec: each unit of work lives in `openspec/changes/<change-name>/tasks.md`, created with `/opsx:propose` and checked off during `/opsx:apply`. Use this file to understand the intended sequencing and dependencies between features, not as a live checklist.
+> **Status: live roadmap.** Canonical phase-level checklist for the project.
+> Per-feature implementation steps live in `openspec/changes/<change-name>/tasks.md` (created with `/opsx:propose`, completed via `/opsx:apply`).
+> Behavior is defined in `openspec/specs/`; package and DB detail in `docs/ARCHITECTURE.md`.
 
-Companion to `PRD.md` and `ARCHITECTURE.md`. Tasks are grouped into phases, ordered by dependency. Each task lists its acceptance criteria and the PRD/Architecture section(s) it implements, so completion can be verified against the spec rather than by inspection alone.
+Companion to `docs/PRD.md` and `docs/ARCHITECTURE.md`. Tasks are grouped into phases, ordered by dependency. Each task lists its acceptance criteria and the PRD/Architecture section(s) it implements, so completion can be verified against the spec rather than by inspection alone.
 
-Checkboxes are for tracking progress as work is completed.
+Checkboxes track phase-level progress. When an OpenSpec change completes and is archived, check off the corresponding phase task(s) here in the same commit.
+
+**Completed changes (archived):** `foundation-setup`, `frontend-tanstack-auth`, `username-auth`, `tvmaze-api`, `shared-show-catalog`.
 
 ---
 
 ## Phase 0: Foundation & Setup
 
-- [ ] **0.1 — Repo scaffolding**
+- [x] **0.1 — Repo scaffolding**
   Create `/backend` (Gradle, Spring Boot init) and `/frontend` (pnpm, React + TypeScript, Vite) as independent projects at the repo root.
   *Acceptance:* `./gradlew build` succeeds in `/backend`; `pnpm install && pnpm build` succeeds in `/frontend`. Neither depends on the other to build.
   *Ref: Architecture §7.2 (monorepo structure)*
 
-- [ ] **0.2 — Local Postgres via Docker Compose**
+- [x] **0.2 — Local Postgres via Docker Compose**
   Add root-level `docker-compose.yml` running Postgres for local dev only.
   *Acceptance:* `docker-compose up` starts a reachable Postgres instance; backend connects to it via `application-local.yml`.
   *Ref: Architecture §8.4*
 
-- [ ] **0.3 — Backend base config**
+- [x] **0.3 — Backend base config**
   Set up Spring profiles, `common/exception` (`GlobalExceptionHandler`), and `config/OpenApiConfig` (springdoc-openapi).
   *Acceptance:* `/swagger-ui.html` loads with an empty API; a thrown `ApiException` returns a structured JSON error, not a raw stack trace.
   *Ref: Architecture §2.2, §8.2*
 
-- [ ] **0.4 — Frontend base setup**
+- [x] **0.4 — Frontend base setup**
   Set up routing (`routes/`), TanStack Query client (`lib/queryClient.ts`), and shared `components/` shell (layout, nav).
   *Acceptance:* App boots to an empty shell with routing and a configured QueryClientProvider.
   *Ref: Architecture §7.1, §7.2*
 
-- [ ] **0.5 — Database migrations tool**
+- [x] **0.5 — Database migrations tool**
   Introduce a migration tool (e.g. Flyway) and write the initial migration creating `users` (only — other tables added per-feature below, in their own phases, so schema changes stay tied to the feature that needs them).
   *Acceptance:* Migrations run cleanly on a fresh DB via `./gradlew flywayMigrate` or on app startup.
 
@@ -38,7 +42,7 @@ Checkboxes are for tracking progress as work is completed.
 
 ## Phase 1: Authentication
 
-> Revised by the `username-auth` OpenSpec change: auth uses username + password only (no email verification or password reset).
+> Revised by the `username-auth` OpenSpec change: auth uses username + password only (no email verification or password reset). Frontend auth uses TanStack Query hooks (`frontend-tanstack-auth`).
 
 - [x] **1.1 — `users` table (migration)**
   Flyway migration for `users` with `username` (unique, case-insensitive lookup).
@@ -67,52 +71,58 @@ Checkboxes are for tracking progress as work is completed.
 
 ## Phase 2: Show Discovery & Library
 
-- [ ] **2.1 — `shows`, `seasons`, `episodes` tables (migration)**
+> Revised by `shared-show-catalog` and `tvmaze-api`: global shared catalog keyed by `tvmaze_id`; per-user `user_library` membership; TVmaze-only backend integration; one-time catalog snapshot (no live sync after first add).
+
+- [x] **2.1 — Shared catalog + library tables (migration)**
+  Flyway V4: global `shows`, `seasons`, `episodes` (no `user_id`; unique `tvmaze_id` on shows); `user_library` with `library_status` and `added_at`; `user_watch_state` (prep for Phase 3).
+  *Acceptance:* Migration runs cleanly on a fresh DB; catalog tables have no user-scoping columns.
   *Ref: Architecture §3*
 
-- [ ] **2.2 — TVmaze client (backend)**
+- [x] **2.2 — TVmaze client (backend)**
   `TvmazeClient` + `TvmazeMapper` + `config/TvmazeConfig` (base URL, User-Agent, backoff/retry).
   *Acceptance:* Client successfully calls TVmaze search and snapshot endpoints against the public API.
   *Ref: Architecture §4*
 
-- [ ] **2.3 — Show search (backend)**
+- [x] **2.3 — Show search (backend)**
   `GET /api/shows/search?query=` — proxies TVmaze, does not persist results.
   *Acceptance:* Returns TVmaze search results; nothing is written to the DB from a search alone.
   *Ref: PRD §5.2; Architecture §4*
 
-- [ ] **2.4 — Add show to library / snapshot (backend)**
-  `POST /api/shows { tvmazeId }` — fetches full show/episode metadata from TVmaze and writes the local snapshot.
-  *Acceptance:* Adding a show creates rows in `shows`, `seasons`, and `episodes` scoped to the requesting user; adding the same TVmaze show twice for the same user is rejected with 409 Conflict.
+- [x] **2.4 — Add show to library (backend)**
+  `POST /api/shows { tvmazeId }` — if catalog missing, fetches full show/episode metadata from TVmaze and creates global catalog rows; always inserts `user_library` link for the requesting user.
+  *Acceptance:* First add creates global `shows`/`seasons`/`episodes` plus a `user_library` row; adding the same TVmaze show again for the same user returns 409 Conflict; a second user adding the same show reuses the existing catalog without a TVmaze call.
   *Ref: PRD §5.2; Architecture §4*
 
-- [ ] **2.5 — Library CRUD (backend)**
+- [x] **2.5 — Library CRUD (backend)**
   `GET /api/shows`, `GET /api/shows/{id}` (with seasons/episodes), `PATCH /api/shows/{id}` (set `library_status`), `DELETE /api/shows/{id}`.
-  *Acceptance:* All endpoints are scoped to the authenticated user; deleting a show removes its seasons/episodes and any dependent reviews/watch-events/favorites (cascade delete or explicit cleanup — confirm approach at implementation time, see PRD §9 open assumption #3).
+  *Acceptance:* List and detail require library membership for the authenticated user; remove deletes the user's `user_library` row and user-scoped data for that show hierarchy; global catalog is orphan-deleted when no users remain linked; catalog is preserved when other users still have the show in their library.
   *Ref: PRD §5.2*
 
-- [ ] **2.6 — Library UI (frontend)**
-  Search page, "add to library" action, library list (with status filter), show detail page (seasons/episodes list).
+- [x] **2.6 — Library UI (frontend)**
+  Search page, "add to library" action, library list, show detail page (seasons/episodes list), `/about` page with TVmaze CC BY-SA attribution. TanStack Query hooks in `features/library/`.
   *Ref: Architecture §7.1*
 
-- [ ] **2.7 — Tests**
-  Unit tests for `TvmazeMapper` and snapshot logic. Integration tests for search/add/list/detail/delete endpoints (TVmaze calls mocked).
+- [x] **2.7 — Tests**
+  Unit tests for `TvmazeMapper` and duplicate-add rejection. Integration tests for search/add/list/detail/delete with mocked TVmaze, including catalog reuse by a second user and orphan delete when the last user removes a show.
   *Ref: Architecture §8.3*
 
 ---
 
 ## Phase 3: Watch Tracking
 
+> `user_watch_state` table and entity already exist (Phase 2 / V4). Phase 3 adds immutable `watch_events` history and `WatchService` cascade logic that updates both `user_watch_state` and `watch_events`. Targets reference shared catalog IDs scoped by `user_id`.
+
 - [ ] **3.1 — `watch_events` table (migration)**
-  Append-only; no update/delete exposed at the repository layer.
+  Append-only history log; no update/delete exposed at the repository layer during normal operations.
   *Ref: Architecture §3*
 
 - [ ] **3.2 — Mark-watched cascade (backend)**
-  `WatchService`: marking an episode/season/show watched, cascading down to children with a shared timestamp, writing one `watch_events` row per affected row, all in a single transaction.
+  `WatchService`: upsert `user_watch_state` for the target (and descendants for season/show) with a shared timestamp; write one `watch_events` row per affected row, all in a single transaction.
   *Acceptance:* Marking a show watched results in every episode/season under it being watched with the same `watched_at`, and one `watch_events` row per affected episode/season/show, correctly tagged with `triggered_by_cascade`.
   *Ref: PRD §5.3; Architecture §5*
 
 - [ ] **3.3 — Unmark-watched cascade with confirmation (backend)**
-  Season/show-level unmark requires `confirm=true`; missing it returns `400`. Cascades down to children, same transactional/logging behavior as marking.
+  Season/show-level unmark requires `confirm=true`; missing it returns `400`. Cascades down to children, updating `user_watch_state` and logging to `watch_events` in one transaction.
   *Acceptance:* Unmarking a show without `confirm=true` is rejected; with it, the show and all its seasons/episodes become unwatched, each logged.
   *Ref: PRD §5.3; Architecture §5, §8.1*
 
@@ -134,7 +144,7 @@ Checkboxes are for tracking progress as work is completed.
 ## Phase 4: Reviews & Ratings
 
 - [ ] **4.1 — `reviews` table (migration)**
-  Unique on `(user_id, target_type, target_id)`.
+  Unique on `(user_id, target_type, target_id)`; targets reference shared catalog entities.
   *Ref: Architecture §3*
 
 - [ ] **4.2 — Review CRUD (backend)**
@@ -204,7 +214,7 @@ Checkboxes are for tracking progress as work is completed.
   *Ref: Architecture §8.1*
 
 - [ ] **7.2 — Data-isolation audit**
-  Verify no query anywhere can leak one user's shows/reviews/watch-events/favorites to another user, across every feature built above.
+  Verify no query anywhere can leak one user's library entries, reviews, watch-events, or favorites to another user, across every feature built above.
   *Ref: PRD §2, §4 (no cross-user visibility)*
 
 - [ ] **7.3 — OpenAPI review**
@@ -212,7 +222,7 @@ Checkboxes are for tracking progress as work is completed.
   *Ref: Architecture §2.2*
 
 - [ ] **7.4 — End-to-end smoke pass**
-  Manually walk the full flow: register → verify → add show → mark episodes/season/show watched (and unmark with confirmation) → write reviews → flag favorite → view analytics.
+  Manually walk the full flow: register → login → add show → mark episodes/season/show watched (and unmark with confirmation) → write reviews → flag favorite → view analytics.
   *Ref: PRD §5 (all functional requirements)*
 
 ---
@@ -221,4 +231,13 @@ Checkboxes are for tracking progress as work is completed.
 
 - Phases are ordered by dependency: Auth must exist before anything user-scoped; Show/library must exist before Watch, Reviews, or Favorites can attach to anything; Analytics depends on Watch, Reviews, and Favorites all being in place.
 - Within each phase, backend tasks precede frontend tasks, since the frontend integrates against a working API.
-- The three open assumptions from `PRD.md` §9 surface concretely in tasks **2.4** (duplicate-add behavior), **2.5** (delete cascade behavior), and Architecture §4 (snapshot vs. live-sync) — resolve those before or during Phase 2 rather than deferring them.
+
+### Resolved decisions (formerly open in PRD §9 / Architecture §4)
+
+- **Duplicate add:** Return 409 when `(user_id, show_id)` already exists in `user_library`.
+- **Remove from library:** Delete user-scoped data and the `user_library` row; orphan-delete global catalog when no users remain; preserve catalog for other users.
+- **Metadata freshness:** One-time TVmaze snapshot at first catalog create; no live sync afterward.
+
+### Remaining open assumption
+
+- **Plan to Watch scope:** Currently implemented at show level only (`user_library.library_status`). Confirm this remains the intended product scope before extending status to seasons/episodes.

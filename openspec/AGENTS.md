@@ -5,11 +5,13 @@ Instructions for AI coding agents (e.g. Claude Code) working in this repository.
 This repo uses **OpenSpec** to drive spec-driven development. `openspec/specs/` is the live source of truth for system behavior — read it before starting any work. `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/TASKS.md` are the original human-authored planning documents that OpenSpec's specs were derived from; they remain useful as a readable overview and for implementation-level detail (package structure, DB schema, sequence flows) that intentionally does *not* live in `openspec/specs/` — but for current behavior, `openspec/specs/` wins if the two ever disagree.
 
 **Workflow — use OpenSpec's commands, don't freehand it:**
+- Use `openspec/TASKS.md` for phase-level progress and sequencing (what to build next).
 - Start new work with `/opsx:propose` (or `/opsx:new`) to create a change under `openspec/changes/<change-name>/`.
-- Implement via `/opsx:apply`, working through that change's own `tasks.md` — not `docs/TASKS.md`.
+- Implement via `/opsx:apply`, working through that change's own `tasks.md`.
 - Verify with `/opsx:verify` where applicable, then complete with `/opsx:archive`, which merges the change's delta specs into `openspec/specs/` and moves the change folder to `openspec/changes/archive/`.
 - Delta specs (`openspec/changes/<name>/specs/<domain>/spec.md`) describe ADDED/MODIFIED/REMOVED requirements relative to the current spec in `openspec/specs/<domain>/spec.md` — write these, don't restate the whole spec.
-- `docs/TASKS.md` is historical/reference only at this point (see its header note) — it maps out the original planned build order, but the actual unit of work an agent picks up and checks off is a change's own `tasks.md`, created via `/opsx:propose`.
+- When archiving a change that completes phase task(s), check the corresponding boxes in `openspec/TASKS.md` in the same commit.
+- `docs/TASKS.md` is a historical copy of the original plan and is not kept in sync — use `openspec/TASKS.md` instead.
 
 Don't improvise scope or structure that contradicts `openspec/specs/` or the documents in `docs/` — if something seems missing or contradictory between them, flag it instead of guessing (see "When Something Is Ambiguous" below).
 
@@ -18,8 +20,8 @@ Don't improvise scope or structure that contradicts `openspec/specs/` or the doc
 ## 1. Repository Layout
 
 ```
-/openspec       → OpenSpec workspace: specs/ (live source of truth), changes/ (work in progress + archive)
-/docs           → PRD.md, ARCHITECTURE.md (implementation detail), TASKS.md (historical reference)
+/openspec       → OpenSpec workspace: specs/ (live source of truth), TASKS.md (live phase roadmap), changes/ (work in progress + archive)
+/docs           → PRD.md, ARCHITECTURE.md (implementation detail), TASKS.md (historical reference, not synced)
 /backend        → Spring Boot + Gradle (Java)
 /frontend       → React + TypeScript + pnpm
 /scripts        → local dev helpers (e.g. test data seeding)
@@ -104,19 +106,23 @@ These encode rules from the PRD/Architecture that are easy to accidentally viola
 
 ## 5. Task Tracking
 
-Work is tracked in the active change's own `openspec/changes/<change-name>/tasks.md`, not `docs/TASKS.md`. When you complete a task:
+Two levels:
+
+- **Phase roadmap:** `openspec/TASKS.md` — ordered phases with acceptance criteria (e.g. task **3.2**).
+- **Feature work:** `openspec/changes/<change-name>/tasks.md` — concrete steps for the current change.
+
+When you complete a task in a change's `tasks.md`:
 1. Verify it against its stated acceptance criteria (and the relevant scenarios in `openspec/specs/<domain>/spec.md` or the change's delta specs) before marking it done.
 2. Check its box in that change's `tasks.md` (`- [ ]` → `- [x]`) in the same commit that completes it.
 3. If a task turns out to need something not covered in the proposal/design/specs, resolve or flag that *before* checking the box — don't check it off with an undocumented gap.
 4. When the change is complete, run `/opsx:archive` so its delta specs merge into `openspec/specs/` and the change folder moves to `openspec/changes/archive/`. Don't hand-edit `openspec/specs/` directly outside of this merge process.
-
-`docs/TASKS.md` reflects the original planned build order and is kept for historical reference — it is not updated as work proceeds.
+5. If the change completes one or more phase tasks in `openspec/TASKS.md`, check those boxes in the same commit as the archive.
 
 ---
 
 ## 6. Commit Conventions
 
-Use Conventional Commits, with the relevant `TASKS.md` task ID in brackets at the end of the subject line:
+Use Conventional Commits, with the relevant `openspec/TASKS.md` phase task ID in brackets at the end of the subject line:
 
 ```
 feat(watch): cascade mark-watched logic [3.2]
@@ -131,9 +137,8 @@ Use the standard types (`feat`, `fix`, `refactor`, `test`, `chore`, `docs`) and 
 
 ## 7. When Something Is Ambiguous
 
-Three assumptions are already flagged as open in `docs/PRD.md` §9 and carried into `docs/ARCHITECTURE.md` §9 — don't silently resolve these yourself if you hit them (e.g. while implementing Tasks 2.4/2.5):
-1. Whether "Plan to Watch" applies only at the show level.
-2. Whether show metadata is a one-time snapshot vs. kept live-synced with TVmaze.
-3. Exact cascade-delete behavior when a show is removed from a library.
+Several assumptions from `docs/PRD.md` §9 are resolved — see **Resolved decisions** in `openspec/TASKS.md` (duplicate add → 409, orphan catalog delete, one-time TVmaze snapshot). One item remains open:
 
-For these, and for anything else not fully specified in PRD/ARCHITECTURE/TASKS: stop and ask, rather than picking a default and moving on. A wrong guess here tends to compound across several tasks before anyone notices.
+- Whether "Plan to Watch" applies only at the show level (currently implemented that way).
+
+For anything else not fully specified in `openspec/specs/`, `docs/PRD.md`, `docs/ARCHITECTURE.md`, or `openspec/TASKS.md`: stop and ask, rather than picking a default and moving on.

@@ -160,6 +160,60 @@ class WatchIntegrationTest {
     }
 
     @Test
+    void markShowWatchedPreservesPreviouslyWatchedEpisodeTimestamp() throws Exception {
+        String token = registerAndLogin("watch_user_preserve_ts");
+        ShowIds ids = addShowAndExtractIds(token, 205);
+        String episodeId = ids.episodeId();
+        String showId = ids.showId();
+
+        mockMvc.perform(post("/api/watch/episodes/" + episodeId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        var beforeShowMark = objectMapper.readTree(
+                mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString());
+        String episodeWatchedAt = beforeShowMark
+                .get("seasons")
+                .get(0)
+                .get("episodes")
+                .get(0)
+                .get("watchedAt")
+                .asText();
+
+        mockMvc.perform(post("/api/watch/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        var afterShowMark = objectMapper.readTree(
+                mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString());
+
+        org.junit.jupiter.api.Assertions.assertEquals(
+                episodeWatchedAt,
+                afterShowMark
+                        .get("seasons")
+                        .get(0)
+                        .get("episodes")
+                        .get(0)
+                        .get("watchedAt")
+                        .asText());
+        org.junit.jupiter.api.Assertions.assertEquals(
+                afterShowMark.get("watchedAt").asText(),
+                afterShowMark
+                        .get("seasons")
+                        .get(0)
+                        .get("episodes")
+                        .get(1)
+                        .get("watchedAt")
+                        .asText());
+    }
+
+    @Test
     void removeShowDeletesWatchEvents() throws Exception {
         String token = registerAndLogin("watch_remove");
         ShowIds ids = addShowAndExtractIds(token, 204);

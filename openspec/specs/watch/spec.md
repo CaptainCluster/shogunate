@@ -15,13 +15,19 @@ The system SHALL allow a user to mark a single episode as watched, recording the
 - AND a watched timestamp is recorded
 
 ### Requirement: Mark Season or Show Watched Cascades Down
-Marking a season or show as watched SHALL mark all of its descendant episodes (and seasons, for a show) as watched, using the same timestamp as the top-level action.
+Marking a season or show as watched SHALL mark all of its unwatched descendant episodes (and seasons, for a show) as watched, using the same timestamp as the top-level action. Already-watched descendants MUST retain their existing watched timestamp.
 
-#### Scenario: Marking a show watched cascades to all episodes
+#### Scenario: Marking a show watched cascades to unwatched episodes
 - GIVEN a show with unwatched seasons and episodes
 - WHEN the user marks the show watched
 - THEN every season and episode belonging to that show becomes watched
-- AND all of them share the same watched timestamp as the show-level action
+- AND each newly watched target shares the same watched timestamp as the show-level action
+
+#### Scenario: Cascade mark preserves existing episode timestamps
+- GIVEN a show where one episode is already marked watched with an earlier timestamp
+- WHEN the user marks the show watched
+- THEN the already-watched episode retains its original watched timestamp
+- AND every previously unwatched episode becomes watched with the show-level action timestamp
 
 ### Requirement: Unmark Watched Requires Confirmation at Season/Show Level
 The system SHALL allow a user to unmark any watched episode, season, or show. Unmarking a season or show MUST cascade to unmark all of its descendants, and MUST require explicit user confirmation before the action is performed.
@@ -38,11 +44,11 @@ The system SHALL allow a user to unmark any watched episode, season, or show. Un
 - THEN the season and all of its episodes become unwatched
 
 ### Requirement: No Rewatch Tracking
-The system SHALL maintain exactly one current watched state and one current watched timestamp per episode, season, and show. Re-marking an already-watched item as watched updates its existing state rather than creating a distinct watch instance.
+The system SHALL maintain exactly one current watched state and one current watched timestamp per episode, season, and show. Re-marking an already-watched target directly (not via a parent cascade) updates its existing timestamp rather than creating a distinct watch instance.
 
-#### Scenario: Re-marking an already-watched episode
+#### Scenario: Re-marking an already-watched episode directly
 - GIVEN an episode already marked watched
-- WHEN the user marks it watched again
+- WHEN the user marks that same episode watched again
 - THEN the episode still has a single current watched state
 - AND its timestamp is updated to reflect the most recent action
 

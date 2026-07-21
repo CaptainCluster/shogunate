@@ -38,7 +38,7 @@ export function useAddShow() {
 export function useUpdateLibraryStatus(showId: string) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (libraryStatus: showApi.LibraryStatus) =>
+    mutationFn: (libraryStatus: showApi.PatchableLibraryStatus) =>
       showApi.updateLibraryStatus(showId, libraryStatus),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: showKeys.library() })

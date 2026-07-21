@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.tvtracker.common.TargetType;
 import com.tvtracker.show.Episode;
 import com.tvtracker.show.EpisodeRepository;
+import com.tvtracker.show.LibraryStatusSyncService;
 import com.tvtracker.show.Season;
 import com.tvtracker.show.SeasonRepository;
 import com.tvtracker.show.Show;
@@ -45,6 +46,9 @@ class WatchServiceAtomicityTest {
 
     @Mock
     private WatchEventRepository watchEventRepository;
+
+    @Mock
+    private LibraryStatusSyncService libraryStatusSyncService;
 
     @InjectMocks
     private WatchService watchService;

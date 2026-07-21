@@ -115,6 +115,70 @@ class WatchIntegrationTest {
 
         org.junit.jupiter.api.Assertions.assertEquals(4, watchEventRepository.count());
         org.junit.jupiter.api.Assertions.assertEquals(4, userWatchStateRepository.count());
+
+        mockMvc.perform(get("/api/shows/" + ids.showId()).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.libraryStatus").value("WATCHED"));
+    }
+
+    @Test
+    void markAllEpisodesIndividuallySetsWatchedLibraryStatus() throws Exception {
+        String token = registerAndLogin("watch_user_episodes");
+        ShowIds ids = addShowAndExtractIds(token, 206);
+        String showId = ids.showId();
+
+        var addResult = objectMapper.readTree(
+                mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString());
+        String firstEpisodeId =
+                addResult.get("seasons").get(0).get("episodes").get(0).get("id").asText();
+        String secondEpisodeId =
+                addResult.get("seasons").get(0).get("episodes").get(1).get("id").asText();
+
+        mockMvc.perform(post("/api/watch/episodes/" + firstEpisodeId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.libraryStatus").value("NONE"));
+
+        mockMvc.perform(post("/api/watch/episodes/" + secondEpisodeId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.libraryStatus").value("WATCHED"));
+    }
+
+    @Test
+    void unmarkEpisodeRevertsWatchedToNone() throws Exception {
+        String token = registerAndLogin("watch_user_restore");
+        ShowIds ids = addShowAndExtractIds(token, 207);
+        String showId = ids.showId();
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch(
+                                "/api/shows/" + showId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"libraryStatus\":\"PLAN_TO_WATCH\"}"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/watch/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.libraryStatus").value("WATCHED"));
+
+        mockMvc.perform(delete("/api/watch/episodes/" + ids.episodeId()).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.libraryStatus").value("NONE"));
     }
 
     @Test

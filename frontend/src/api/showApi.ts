@@ -1,6 +1,8 @@
 import { apiRequest } from './client'
 
-export type LibraryStatus = 'NONE' | 'PLAN_TO_WATCH'
+export type LibraryStatus = 'NONE' | 'PLAN_TO_WATCH' | 'WATCHED'
+
+export type PatchableLibraryStatus = Exclude<LibraryStatus, 'WATCHED'>
 
 export interface ShowSearchResult {
   tvmazeId: number
@@ -67,7 +69,7 @@ export function addShow(tvmazeId: number) {
   })
 }
 
-export function updateLibraryStatus(id: string, libraryStatus: LibraryStatus) {
+export function updateLibraryStatus(id: string, libraryStatus: PatchableLibraryStatus) {
   return apiRequest<ShowSummary>(`/api/shows/${id}`, {
     method: 'PATCH',
     body: JSON.stringify({ libraryStatus }),

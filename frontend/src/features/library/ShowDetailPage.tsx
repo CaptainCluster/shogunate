@@ -8,6 +8,7 @@ import {
   useShowDetail,
   useUpdateLibraryStatus,
 } from './hooks/useShowLibrary'
+import { formatLibraryStatus } from './formatLibraryStatus'
 import './LibraryPage.css'
 import '../watch/watch.css'
 
@@ -89,17 +90,21 @@ export function ShowDetailPage() {
             </p>
           )}
           <label htmlFor="library-status">Library status</label>
-          <select
-            id="library-status"
-            value={data.libraryStatus}
-            disabled={watchMutations.isPending}
-            onChange={(event) =>
-              updateStatus.mutate(event.target.value as 'NONE' | 'PLAN_TO_WATCH')
-            }
-          >
-            <option value="NONE">None</option>
-            <option value="PLAN_TO_WATCH">Plan to Watch</option>
-          </select>
+          {data.libraryStatus === 'WATCHED' ? (
+            <p id="library-status">{formatLibraryStatus(data.libraryStatus)}</p>
+          ) : (
+            <select
+              id="library-status"
+              value={data.libraryStatus}
+              disabled={watchMutations.isPending || updateStatus.isPending}
+              onChange={(event) =>
+                updateStatus.mutate(event.target.value as 'NONE' | 'PLAN_TO_WATCH')
+              }
+            >
+              <option value="NONE">None</option>
+              <option value="PLAN_TO_WATCH">Plan to Watch</option>
+            </select>
+          )}
           <p>
             <button type="button" onClick={handleRemove} disabled={removeShow.isPending}>
               Remove from library

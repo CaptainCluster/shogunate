@@ -12,6 +12,7 @@ import com.tvtracker.common.exception.ForbiddenException;
 import com.tvtracker.common.exception.ValidationException;
 import com.tvtracker.show.Episode;
 import com.tvtracker.show.EpisodeRepository;
+import com.tvtracker.show.LibraryStatusSyncService;
 import com.tvtracker.show.Season;
 import com.tvtracker.show.SeasonRepository;
 import com.tvtracker.show.Show;
@@ -48,6 +49,9 @@ class WatchServiceTest {
 
     @Mock
     private WatchEventRepository watchEventRepository;
+
+    @Mock
+    private LibraryStatusSyncService libraryStatusSyncService;
 
     @InjectMocks
     private WatchService watchService;

@@ -6,6 +6,7 @@ import com.tvtracker.common.exception.NotFoundException;
 import com.tvtracker.common.exception.ValidationException;
 import com.tvtracker.show.Episode;
 import com.tvtracker.show.EpisodeRepository;
+import com.tvtracker.show.LibraryStatusSyncService;
 import com.tvtracker.show.Season;
 import com.tvtracker.show.SeasonRepository;
 import com.tvtracker.show.ShowRepository;
@@ -29,6 +30,7 @@ public class WatchService {
     private final UserLibraryRepository userLibraryRepository;
     private final UserWatchStateRepository userWatchStateRepository;
     private final WatchEventRepository watchEventRepository;
+    private final LibraryStatusSyncService libraryStatusSyncService;
 
     @Transactional
     public void markWatched(UUID userId, TargetType targetType, UUID targetId) {
@@ -53,6 +55,7 @@ public class WatchService {
         }
 
         appendWatchEvents(userId, changedTargets, WatchAction.WATCHED, now);
+        libraryStatusSyncService.syncAfterWatchChange(userId, showId);
     }
 
     @Transactional
@@ -72,6 +75,7 @@ public class WatchService {
         }
 
         appendWatchEvents(userId, targets, WatchAction.UNWATCHED, now);
+        libraryStatusSyncService.syncAfterWatchChange(userId, showId);
     }
 
     private Optional<UserWatchState> findWatchState(UUID userId, WatchTarget target) {

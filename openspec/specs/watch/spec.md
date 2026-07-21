@@ -15,13 +15,19 @@ The system SHALL allow a user to mark a single episode as watched, recording the
 - AND a watched timestamp is recorded
 
 ### Requirement: Mark Season or Show Watched Cascades Down
-Marking a season or show as watched SHALL mark all of its descendant episodes (and seasons, for a show) as watched, using the same timestamp as the top-level action.
+Marking a season or show as watched SHALL mark all of its unwatched descendant episodes (and seasons, for a show) as watched, using the same timestamp as the top-level action. Already-watched descendants MUST retain their existing watched timestamp.
 
-#### Scenario: Marking a show watched cascades to all episodes
+#### Scenario: Marking a show watched cascades to unwatched episodes
 - GIVEN a show with unwatched seasons and episodes
 - WHEN the user marks the show watched
 - THEN every season and episode belonging to that show becomes watched
-- AND all of them share the same watched timestamp as the show-level action
+- AND each newly watched target shares the same watched timestamp as the show-level action
+
+#### Scenario: Cascade mark preserves existing episode timestamps
+- GIVEN a show where one episode is already marked watched with an earlier timestamp
+- WHEN the user marks the show watched
+- THEN the already-watched episode retains its original watched timestamp
+- AND every previously unwatched episode becomes watched with the show-level action timestamp
 
 ### Requirement: Unmark Watched Requires Confirmation at Season/Show Level
 The system SHALL allow a user to unmark any watched episode, season, or show. Unmarking a season or show MUST cascade to unmark all of its descendants, and MUST require explicit user confirmation before the action is performed.
@@ -38,11 +44,11 @@ The system SHALL allow a user to unmark any watched episode, season, or show. Un
 - THEN the season and all of its episodes become unwatched
 
 ### Requirement: No Rewatch Tracking
-The system SHALL maintain exactly one current watched state and one current watched timestamp per episode, season, and show. Re-marking an already-watched item as watched updates its existing state rather than creating a distinct watch instance.
+The system SHALL maintain exactly one current watched state and one current watched timestamp per episode, season, and show. Re-marking an already-watched target directly (not via a parent cascade) updates its existing timestamp rather than creating a distinct watch instance.
 
-#### Scenario: Re-marking an already-watched episode
+#### Scenario: Re-marking an already-watched episode directly
 - GIVEN an episode already marked watched
-- WHEN the user marks it watched again
+- WHEN the user marks that same episode watched again
 - THEN the episode still has a single current watched state
 - AND its timestamp is updated to reflect the most recent action
 
@@ -105,3 +111,66 @@ When a mark or unmark operation cascades to descendant targets, each resulting h
 - THEN a history log entry exists for the show with cascade-triggered set to false
 - AND each season and episode entry has cascade-triggered set to true
 - AND each descendant entry references the show-level event as its cascade source
+
+### Requirement: Watch Controls on Show Detail
+The frontend SHALL provide separate mark-watched and unmark actions at the episode, season, and show level on the show detail page for shows in the authenticated user's library.
+
+#### Scenario: Mark episode from show detail
+- GIVEN the user views show detail for a show in their library
+- AND an episode is unwatched
+- WHEN the user activates mark-watched for that episode
+- THEN the episode is marked watched via the watch API
+- AND the episode becomes watched in the UI after the mutation succeeds
+
+#### Scenario: Unmark episode without confirmation modal
+- GIVEN the user activates unmark on a watched episode from show detail
+- WHEN the unmark action completes
+- THEN the unmark request is sent immediately without a confirmation step
+- AND the episode becomes unwatched in the UI after the mutation succeeds
+
+#### Scenario: Mark season or show cascades in UI
+- GIVEN the user marks a season or show watched from show detail
+- WHEN the mutation succeeds
+- THEN all affected seasons and episodes on the page reflect watched state without a manual page refresh
+
+### Requirement: Season and Show Unmark Confirmation Modal
+The frontend MUST require explicit user confirmation before sending an unmark request for a watched season or show.
+
+#### Scenario: Season unmark shows confirmation
+- GIVEN the user activates unmark on a watched season
+- WHEN the confirmation dialog is shown
+- THEN it describes that the season and its episodes will be unmarked
+- AND no API request is sent until the user confirms
+
+#### Scenario: Cancel confirmation preserves state
+- GIVEN the season or show unmark confirmation dialog is open
+- WHEN the user cancels the dialog
+- THEN no unmark API request is sent
+- AND watched state on the page is unchanged
+
+#### Scenario: Confirm sends request with confirm flag
+- GIVEN the user confirms unmark for a watched season or show
+- WHEN the unmark request completes
+- THEN the frontend sends the unmark request with `confirm=true`
+- AND all affected rows on show detail reflect unwatched state after success
+
+### Requirement: Season Progress on Show Detail
+The show detail page SHALL display derived episode watch progress for each season.
+
+#### Scenario: Progress updates after marking an episode
+- GIVEN the user marks an episode watched from show detail
+- WHEN the UI updates
+- THEN the season header shows an updated watched-episode count out of total episodes for that season
+
+#### Scenario: Progress reflects full season after cascade mark
+- GIVEN the user marks a season watched
+- WHEN the UI updates
+- THEN that season's progress shows all episodes watched
+
+### Requirement: Watch Mutation Server State via TanStack Query
+Watch mark and unmark API calls MUST be consumed through TanStack Query mutation hooks; pages and presentational components MUST NOT call the watch API directly.
+
+#### Scenario: Show detail refreshes after watch mutation
+- GIVEN a watch or unmark mutation succeeds for any target on a show detail page
+- WHEN the show detail query is invalidated or refetched
+- THEN watch state for the show, seasons, and episodes updates from server data

@@ -54,12 +54,12 @@ export function LibraryPage() {
                   {show.overview && <p className="library-overview">{show.overview}</p>}
                   <button
                     type="button"
-                    disabled={addShow.isPending}
+                    disabled={addShow.isPending && addShow.variables === show.tvmazeId}
                     onClick={() => addShow.mutate(show.tvmazeId)}
                   >
                     Add to library
                   </button>
-                  {addShow.error && (
+                  {addShow.error && addShow.variables === show.tvmazeId && (
                     <p className="library-error">{getErrorMessage(addShow.error, 'Add failed')}</p>
                   )}
                 </div>

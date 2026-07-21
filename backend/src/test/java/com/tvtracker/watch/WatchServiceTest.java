@@ -118,6 +118,57 @@ class WatchServiceTest {
     }
 
     @Test
+    void markShowWatchedPreservesExistingEpisodeTimestamp() {
+        UUID userId = UUID.randomUUID();
+        UUID showId = UUID.randomUUID();
+        UUID seasonId = UUID.randomUUID();
+        UUID watchedEpisodeId = UUID.randomUUID();
+        UUID unwatchedEpisodeId = UUID.randomUUID();
+        Instant previous = Instant.parse("2020-01-01T00:00:00Z");
+
+        when(showRepository.findById(showId)).thenReturn(Optional.of(show(showId)));
+        when(userLibraryRepository.existsByUserIdAndShowId(userId, showId)).thenReturn(true);
+        when(seasonRepository.findByShowIdOrderBySeasonNumberAsc(showId)).thenReturn(List.of(season(showId, seasonId)));
+        when(episodeRepository.findBySeasonIdOrderByEpisodeNumberAsc(seasonId))
+                .thenReturn(List.of(episode(seasonId, watchedEpisodeId), episode(seasonId, unwatchedEpisodeId)));
+        when(userWatchStateRepository.findById(any())).thenAnswer(invocation -> {
+            UserWatchState.UserWatchStateId id = invocation.getArgument(0);
+            if (id.getTargetType() == TargetType.EPISODE && id.getTargetId().equals(watchedEpisodeId)) {
+                return Optional.of(UserWatchState.builder()
+                        .userId(userId)
+                        .targetType(TargetType.EPISODE)
+                        .targetId(watchedEpisodeId)
+                        .watched(true)
+                        .watchedAt(previous)
+                        .build());
+            }
+            return Optional.empty();
+        });
+        when(userWatchStateRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(watchEventRepository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+
+        watchService.markWatched(userId, TargetType.SHOW, showId);
+
+        ArgumentCaptor<UserWatchState> stateCaptor = ArgumentCaptor.forClass(UserWatchState.class);
+        verify(userWatchStateRepository, org.mockito.Mockito.times(3)).save(stateCaptor.capture());
+
+        boolean preservedWatchedEpisode =
+                stateCaptor.getAllValues().stream().noneMatch(state -> watchedEpisodeId.equals(state.getTargetId()));
+        org.junit.jupiter.api.Assertions.assertTrue(preservedWatchedEpisode);
+
+        UserWatchState newlyWatchedEpisode = stateCaptor.getAllValues().stream()
+                .filter(state -> unwatchedEpisodeId.equals(state.getTargetId()))
+                .findFirst()
+                .orElseThrow();
+        org.junit.jupiter.api.Assertions.assertNotEquals(previous, newlyWatchedEpisode.getWatchedAt());
+
+        ArgumentCaptor<WatchEvent> eventCaptor = ArgumentCaptor.forClass(WatchEvent.class);
+        verify(watchEventRepository, org.mockito.Mockito.times(3)).save(eventCaptor.capture());
+        org.junit.jupiter.api.Assertions.assertTrue(
+                eventCaptor.getAllValues().stream().noneMatch(event -> watchedEpisodeId.equals(event.getTargetId())));
+    }
+
+    @Test
     void remMarkUpdatesExistingTimestamp() {
         UUID userId = UUID.randomUUID();
         UUID showId = UUID.randomUUID();

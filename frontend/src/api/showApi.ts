@@ -28,16 +28,22 @@ export interface Episode {
   episodeNumber: number
   title: string | null
   airDate: string | null
+  watched: boolean
+  watchedAt: string | null
 }
 
 export interface Season {
   id: string
   seasonNumber: number
   name: string | null
+  watched: boolean
+  watchedAt: string | null
   episodes: Episode[]
 }
 
 export interface ShowDetail extends ShowSummary {
+  watched: boolean
+  watchedAt: string | null
   seasons: Season[]
 }
 

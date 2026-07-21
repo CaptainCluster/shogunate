@@ -13,6 +13,7 @@ import com.tvtracker.show.UserLibraryRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,12 +37,22 @@ public class WatchService {
 
         List<WatchTarget> targets = collectTargets(targetType, targetId, showId);
         Instant now = Instant.now();
+        List<WatchTarget> changedTargets = new ArrayList<>();
 
-        for (WatchTarget target : targets) {
+        for (int i = 0; i < targets.size(); i++) {
+            WatchTarget target = targets.get(i);
+            boolean isTopLevel = i == 0;
+            Optional<UserWatchState> existing = findWatchState(userId, target);
+
+            if (!isTopLevel && existing.map(UserWatchState::isWatched).orElse(false)) {
+                continue;
+            }
+
             upsertWatchState(userId, target, true, now);
+            changedTargets.add(target);
         }
 
-        appendWatchEvents(userId, targets, WatchAction.WATCHED, now);
+        appendWatchEvents(userId, changedTargets, WatchAction.WATCHED, now);
     }
 
     @Transactional
@@ -61,6 +72,12 @@ public class WatchService {
         }
 
         appendWatchEvents(userId, targets, WatchAction.UNWATCHED, now);
+    }
+
+    private Optional<UserWatchState> findWatchState(UUID userId, WatchTarget target) {
+        UserWatchState.UserWatchStateId id =
+                new UserWatchState.UserWatchStateId(userId, target.targetType(), target.targetId());
+        return userWatchStateRepository.findById(id);
     }
 
     private void upsertWatchState(UUID userId, WatchTarget target, boolean watched, Instant watchedAt) {

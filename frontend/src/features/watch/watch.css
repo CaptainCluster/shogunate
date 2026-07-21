@@ -1,0 +1,61 @@
+.watch-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.watch-button {
+  font-size: 0.85rem;
+  padding: 0.25rem 0.6rem;
+  white-space: nowrap;
+}
+
+.watch-button-mark {
+  border-color: var(--accent-border);
+}
+
+.watch-timestamp {
+  font-size: 0.8rem;
+  color: var(--text);
+}
+
+.season-progress {
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-left: 0.5rem;
+}
+
+.season-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.episode-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.episode-row--watched .episode-title {
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.episode-row--watched .episode-title::before {
+  content: '✓ ';
+  color: var(--accent);
+}
+
+.show-watch-controls {
+  margin: 0.75rem 0;
+}
+
+.watch-error {
+  margin-top: 0.5rem;
+}

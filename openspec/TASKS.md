@@ -120,7 +120,7 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 > `user_watch_state` table and entity already exist (Phase 2 / V4). Phase 3 adds immutable `watch_events` history and `WatchService` cascade logic that updates both `user_watch_state` and `watch_events`. Targets reference shared catalog IDs scoped by `user_id`.
 >
-> **Backend change:** `watch-tracking-backend` implements 3.1–3.4 and the backend portion of 3.6. **Frontend (3.5) is deferred** to a separate change after the backend APIs ship.
+> **Backend change:** `watch-tracking-backend` implements 3.1–3.4 and the backend portion of 3.6. **Frontend (3.5)** implemented in `watch-tracking-frontend`.
 
 - [x] **3.1 —** `watch_events` **table (migration)**
   Append-only history log during normal watch/unwatch; bulk delete permitted only on library removal.
@@ -145,7 +145,7 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   *Acceptance:* Unwatched targets default to `watched=false`; after mark operations, detail reflects current state without separate watch GET endpoints.
   *Ref: Architecture §2.1; prepares Phase 3.5 frontend*
 
-- [ ] **3.5 — Watch controls + confirmation modal (frontend)** *(deferred — separate change)*
+- [x] **3.5 — Watch controls + confirmation modal (frontend)**
   Mark/unmark buttons at episode/season/show level; `useConfirm` modal wired to season/show unmark actions; TanStack Query cache invalidation covering the target and all its ancestors/descendants.
   *Acceptance:* Unmarking a season in the UI prompts for confirmation before firing the request; after a cascade action, all affected rows update in the UI without a manual refresh.
   *Ref: PRD §5.3; Architecture §7.2, §7.3*

@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.tvtracker.common.TargetType;
 import com.tvtracker.common.exception.ConflictException;
 import com.tvtracker.common.exception.NotFoundException;
+import com.tvtracker.common.exception.ValidationException;
 import com.tvtracker.show.dto.ShowDetailResponse;
 import com.tvtracker.show.tvmaze.TvmazeClient;
 import com.tvtracker.watch.UserWatchState;
@@ -282,5 +283,38 @@ class ShowServiceTest {
         var summary = showService.updateLibraryStatus(userId, showId, LibraryStatus.PLAN_TO_WATCH);
 
         assertEquals(LibraryStatus.PLAN_TO_WATCH, summary.libraryStatus());
+    }
+
+    @Test
+    void updateLibraryStatusRejectsWatched() {
+        UUID userId = UUID.randomUUID();
+        UUID showId = UUID.randomUUID();
+
+        assertThrows(
+                ValidationException.class,
+                () -> showService.updateLibraryStatus(userId, showId, LibraryStatus.WATCHED));
+
+        verify(userLibraryRepository, never()).save(any(UserLibrary.class));
+    }
+
+    @Test
+    void updateLibraryStatusRejectsChangeWhileWatched() {
+        UUID userId = UUID.randomUUID();
+        UUID showId = UUID.randomUUID();
+        UserLibrary entry = UserLibrary.builder()
+                .id(UUID.randomUUID())
+                .userId(userId)
+                .showId(showId)
+                .libraryStatus(LibraryStatus.WATCHED)
+                .addedAt(Instant.now())
+                .build();
+
+        when(userLibraryRepository.findByUserIdAndShowId(userId, showId)).thenReturn(Optional.of(entry));
+
+        assertThrows(
+                ValidationException.class,
+                () -> showService.updateLibraryStatus(userId, showId, LibraryStatus.PLAN_TO_WATCH));
+
+        verify(userLibraryRepository, never()).save(any(UserLibrary.class));
     }
 }

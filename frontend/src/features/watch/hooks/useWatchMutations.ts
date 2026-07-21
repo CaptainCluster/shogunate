@@ -12,38 +12,41 @@ export interface PendingWatchAction {
 export function useWatchMutations(showId: string) {
   const queryClient = useQueryClient()
 
-  function invalidateShowDetail() {
-    return queryClient.invalidateQueries({ queryKey: showKeys.detail(showId) })
+  function invalidateShowQueries() {
+    return Promise.all([
+      queryClient.invalidateQueries({ queryKey: showKeys.detail(showId) }),
+      queryClient.invalidateQueries({ queryKey: showKeys.library() }),
+    ])
   }
 
   const markEpisode = useMutation({
     mutationFn: (episodeId: string) => watchApi.markEpisodeWatched(episodeId),
-    onSuccess: invalidateShowDetail,
+    onSuccess: invalidateShowQueries,
   })
 
   const unmarkEpisode = useMutation({
     mutationFn: (episodeId: string) => watchApi.unmarkEpisodeWatched(episodeId),
-    onSuccess: invalidateShowDetail,
+    onSuccess: invalidateShowQueries,
   })
 
   const markSeason = useMutation({
     mutationFn: (seasonId: string) => watchApi.markSeasonWatched(seasonId),
-    onSuccess: invalidateShowDetail,
+    onSuccess: invalidateShowQueries,
   })
 
   const unmarkSeason = useMutation({
     mutationFn: (seasonId: string) => watchApi.unmarkSeasonWatched(seasonId, true),
-    onSuccess: invalidateShowDetail,
+    onSuccess: invalidateShowQueries,
   })
 
   const markShow = useMutation({
     mutationFn: (id: string) => watchApi.markShowWatched(id),
-    onSuccess: invalidateShowDetail,
+    onSuccess: invalidateShowQueries,
   })
 
   const unmarkShow = useMutation({
     mutationFn: (id: string) => watchApi.unmarkShowWatched(id, true),
-    onSuccess: invalidateShowDetail,
+    onSuccess: invalidateShowQueries,
   })
 
   const mutations = [

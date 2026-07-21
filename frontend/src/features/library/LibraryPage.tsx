@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import type { ShowSearchResult, ShowSummary } from '../../api/showApi'
 import { getErrorMessage } from '../../lib/getErrorMessage'
 import { useAddShow, useRemoveShow, useShowLibrary, useShowSearch } from './hooks/useShowLibrary'
+import { formatLibraryStatus } from './formatLibraryStatus'
 import './LibraryPage.css'
 
 export function LibraryPage() {
@@ -88,7 +89,7 @@ export function LibraryPage() {
                 <h3>
                   <Link to={`/library/${show.id}`}>{show.title}</Link>
                 </h3>
-                <p className="library-meta">Status: {show.libraryStatus.replace('_', ' ')}</p>
+                <p className="library-meta">Status: {formatLibraryStatus(show.libraryStatus)}</p>
                 <button
                   type="button"
                   disabled={removeShow.isPending}

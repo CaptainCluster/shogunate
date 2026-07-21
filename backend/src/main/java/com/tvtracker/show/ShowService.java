@@ -3,6 +3,7 @@ package com.tvtracker.show;
 import com.tvtracker.common.TargetType;
 import com.tvtracker.common.exception.ConflictException;
 import com.tvtracker.common.exception.NotFoundException;
+import com.tvtracker.common.exception.ValidationException;
 import com.tvtracker.show.dto.EpisodeResponse;
 import com.tvtracker.show.dto.SeasonResponse;
 import com.tvtracker.show.dto.ShowDetailResponse;
@@ -121,9 +122,18 @@ public class ShowService {
 
     @Transactional
     public ShowSummaryResponse updateLibraryStatus(UUID userId, UUID showId, LibraryStatus status) {
+        if (status == LibraryStatus.WATCHED) {
+            throw new ValidationException("WATCHED status cannot be set manually");
+        }
+
         UserLibrary entry = userLibraryRepository
                 .findByUserIdAndShowId(userId, showId)
                 .orElseThrow(() -> new NotFoundException("Show not in library"));
+
+        if (entry.getLibraryStatus() == LibraryStatus.WATCHED) {
+            throw new ValidationException("Cannot change library status while show is fully watched");
+        }
+
         UserLibrary updated = entry.toBuilder().libraryStatus(status).build();
         userLibraryRepository.save(updated);
 

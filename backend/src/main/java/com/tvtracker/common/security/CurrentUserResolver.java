@@ -1,6 +1,8 @@
 package com.tvtracker.common.security;
 
 import java.util.UUID;
+
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -23,9 +25,9 @@ public class CurrentUserResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public Object resolveArgument(
-            MethodParameter parameter,
+            @NonNull MethodParameter parameter,
             ModelAndViewContainer mavContainer,
-            NativeWebRequest webRequest,
+            @NonNull NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !(authentication.getPrincipal() instanceof UUID userId)) {

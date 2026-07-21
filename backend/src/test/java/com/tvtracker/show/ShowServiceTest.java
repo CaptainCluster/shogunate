@@ -57,8 +57,19 @@ class ShowServiceTest {
     void addToLibraryReusesExistingCatalog() {
         UUID userId = UUID.randomUUID();
         UUID showId = UUID.randomUUID();
-        Show show = new Show(showId, 82, "Breaking Bad", null, null, null, null, Instant.now());
-        UserLibrary entry = new UserLibrary(UUID.randomUUID(), userId, showId, LibraryStatus.NONE, Instant.now());
+        Show show = Show.builder()
+                .id(showId)
+                .tvmazeId(82)
+                .title("Breaking Bad")
+                .createdAt(Instant.now())
+                .build();
+        UserLibrary entry = UserLibrary.builder()
+                .id(UUID.randomUUID())
+                .userId(userId)
+                .showId(showId)
+                .libraryStatus(LibraryStatus.NONE)
+                .addedAt(Instant.now())
+                .build();
 
         when(userLibraryRepository.existsByUserIdAndTvmazeId(userId, 82)).thenReturn(false);
         when(showRepository.findByTvmazeId(82)).thenReturn(Optional.of(show));

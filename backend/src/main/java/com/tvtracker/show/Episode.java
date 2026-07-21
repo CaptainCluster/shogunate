@@ -6,9 +6,18 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "episodes")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class Episode {
 
     @Id
@@ -24,34 +33,4 @@ public class Episode {
 
     @Column(name = "air_date")
     private LocalDate airDate;
-
-    protected Episode() {}
-
-    public Episode(UUID id, UUID seasonId, int episodeNumber, String title, LocalDate airDate) {
-        this.id = id;
-        this.seasonId = seasonId;
-        this.episodeNumber = episodeNumber;
-        this.title = title;
-        this.airDate = airDate;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getSeasonId() {
-        return seasonId;
-    }
-
-    public int getEpisodeNumber() {
-        return episodeNumber;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public LocalDate getAirDate() {
-        return airDate;
-    }
 }

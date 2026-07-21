@@ -17,10 +17,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@RequiredArgsConstructor
 public class ShowService {
 
     private final TvmazeClient tvmazeClient;
@@ -29,21 +31,6 @@ public class ShowService {
     private final EpisodeRepository episodeRepository;
     private final UserLibraryRepository userLibraryRepository;
     private final UserWatchStateRepository userWatchStateRepository;
-
-    public ShowService(
-            TvmazeClient tvmazeClient,
-            ShowRepository showRepository,
-            SeasonRepository seasonRepository,
-            EpisodeRepository episodeRepository,
-            UserLibraryRepository userLibraryRepository,
-            UserWatchStateRepository userWatchStateRepository) {
-        this.tvmazeClient = tvmazeClient;
-        this.showRepository = showRepository;
-        this.seasonRepository = seasonRepository;
-        this.episodeRepository = episodeRepository;
-        this.userLibraryRepository = userLibraryRepository;
-        this.userWatchStateRepository = userWatchStateRepository;
-    }
 
     public List<ShowSearchResult> search(String query) {
         if (query == null || query.isBlank()) {
@@ -64,7 +51,13 @@ public class ShowService {
         Show show = showRepository.findByTvmazeId(tvmazeId).orElseGet(() -> createCatalogFromTvmaze(tvmazeId));
 
         Instant now = Instant.now();
-        UserLibrary entry = new UserLibrary(UUID.randomUUID(), userId, show.getId(), LibraryStatus.NONE, now);
+        UserLibrary entry = UserLibrary.builder()
+                .id(UUID.randomUUID())
+                .userId(userId)
+                .showId(show.getId())
+                .libraryStatus(LibraryStatus.NONE)
+                .addedAt(now)
+                .build();
         userLibraryRepository.save(entry);
 
         return getShowDetail(userId, show.getId());
@@ -118,11 +111,11 @@ public class ShowService {
         UserLibrary entry = userLibraryRepository
                 .findByUserIdAndShowId(userId, showId)
                 .orElseThrow(() -> new NotFoundException("Show not in library"));
-        entry.setLibraryStatus(status);
-        userLibraryRepository.save(entry);
+        UserLibrary updated = entry.toBuilder().libraryStatus(status).build();
+        userLibraryRepository.save(updated);
 
         Show show = showRepository.findById(showId).orElseThrow(() -> new NotFoundException("Show not found"));
-        return toSummary(show, entry);
+        return toSummary(show, updated);
     }
 
     /**

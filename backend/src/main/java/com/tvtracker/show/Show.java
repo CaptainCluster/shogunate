@@ -7,9 +7,18 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "shows")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class Show {
 
     @Id
@@ -34,57 +43,4 @@ public class Show {
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
-
-    protected Show() {}
-
-    public Show(
-            UUID id,
-            int tvmazeId,
-            String title,
-            String overview,
-            String posterUrl,
-            String tvmazeUrl,
-            LocalDate firstAirDate,
-            Instant createdAt) {
-        this.id = id;
-        this.tvmazeId = tvmazeId;
-        this.title = title;
-        this.overview = overview;
-        this.posterUrl = posterUrl;
-        this.tvmazeUrl = tvmazeUrl;
-        this.firstAirDate = firstAirDate;
-        this.createdAt = createdAt;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public int getTvmazeId() {
-        return tvmazeId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getOverview() {
-        return overview;
-    }
-
-    public String getPosterUrl() {
-        return posterUrl;
-    }
-
-    public String getTvmazeUrl() {
-        return tvmazeUrl;
-    }
-
-    public LocalDate getFirstAirDate() {
-        return firstAirDate;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
 }

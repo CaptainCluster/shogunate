@@ -24,15 +24,16 @@ public final class TvmazeMapper {
     }
 
     public static Show toShow(TvmazeShowRef ref, UUID id, Instant createdAt) {
-        return new Show(
-                id,
-                ref.id(),
-                ref.name(),
-                stripHtml(ref.summary()),
-                ref.image() != null ? ref.image().medium() : null,
-                ref.url(),
-                parseDate(ref.premiered()),
-                createdAt);
+        return Show.builder()
+                .id(id)
+                .tvmazeId(ref.id())
+                .title(ref.name())
+                .overview(stripHtml(ref.summary()))
+                .posterUrl(ref.image() != null ? ref.image().medium() : null)
+                .tvmazeUrl(ref.url())
+                .firstAirDate(parseDate(ref.premiered()))
+                .createdAt(createdAt)
+                .build();
     }
 
     public static CatalogSnapshot toCatalogSnapshot(
@@ -50,12 +51,24 @@ public final class TvmazeMapper {
                 .forEach(ep -> {
                     UUID seasonId = seasonIds.computeIfAbsent(ep.season(), ignored -> {
                         UUID id = UUID.randomUUID();
-                        seasons.put(ep.season(), new Season(id, showId, ep.season(), "Season " + ep.season()));
+                        seasons.put(
+                                ep.season(),
+                                Season.builder()
+                                        .id(id)
+                                        .showId(showId)
+                                        .seasonNumber(ep.season())
+                                        .name("Season " + ep.season())
+                                        .build());
                         return id;
                     });
                     int episodeNumber = ep.number() != null ? ep.number() : 0;
-                    episodeEntities.add(new Episode(
-                            UUID.randomUUID(), seasonId, episodeNumber, ep.name(), parseDate(ep.airDate())));
+                    episodeEntities.add(Episode.builder()
+                            .id(UUID.randomUUID())
+                            .seasonId(seasonId)
+                            .episodeNumber(episodeNumber)
+                            .title(ep.name())
+                            .airDate(parseDate(ep.airDate()))
+                            .build());
                 });
 
         return new CatalogSnapshot(show, List.copyOf(seasons.values()), episodeEntities);

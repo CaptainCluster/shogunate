@@ -5,9 +5,18 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "seasons")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class Season {
 
     @Id
@@ -20,29 +29,4 @@ public class Season {
     private int seasonNumber;
 
     private String name;
-
-    protected Season() {}
-
-    public Season(UUID id, UUID showId, int seasonNumber, String name) {
-        this.id = id;
-        this.showId = showId;
-        this.seasonNumber = seasonNumber;
-        this.name = name;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getShowId() {
-        return showId;
-    }
-
-    public int getSeasonNumber() {
-        return seasonNumber;
-    }
-
-    public String getName() {
-        return name;
-    }
 }

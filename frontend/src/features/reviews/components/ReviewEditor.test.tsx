@@ -119,4 +119,36 @@ describe('ReviewEditor', () => {
     await user.click(view.getByRole('button', { name: 'Delete review' }))
     await waitFor(() => expect(reviewApi.deleteReview).toHaveBeenCalledWith('review-1'))
   })
+
+  it('collapses existing episode reviews until the expand control is used', async () => {
+    const user = userEvent.setup()
+    vi.mocked(reviewApi.getReview).mockResolvedValue({
+      id: 'review-1',
+      targetType: 'EPISODE',
+      targetId: 'episode-1',
+      rating: 4,
+      body: 'Solid episode',
+      createdAt: '2024-01-01T00:00:00Z',
+      updatedAt: null,
+    })
+
+    const { container } = renderWithProviders(
+      <ReviewEditor
+        compact
+        collapseExistingReview
+        targetType="EPISODE"
+        targetId="episode-1"
+      />,
+    )
+    const view = within(container)
+
+    await waitFor(() => expect(view.getByRole('slider')).toBeInTheDocument())
+    expect(view.queryByRole('textbox')).not.toBeInTheDocument()
+    expect(view.getByRole('button', { name: 'Show review details' })).toBeInTheDocument()
+
+    await user.click(view.getByRole('button', { name: 'Show review details' }))
+
+    await waitFor(() => expect(view.getByDisplayValue('Solid episode')).toBeInTheDocument())
+    expect(view.getByRole('button', { name: 'Save review' })).toBeInTheDocument()
+  })
 })

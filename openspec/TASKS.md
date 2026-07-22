@@ -8,7 +8,7 @@ Companion to `docs/PRD.md` and `docs/ARCHITECTURE.md`. Tasks are grouped into ph
 
 Checkboxes track phase-level progress. When an OpenSpec change completes and is archived, check off the corresponding phase task(s) here in the same commit.
 
-**Completed changes (archived):** `foundation-setup`, `frontend-tanstack-auth`, `username-auth`, `tvmaze-api`, `shared-show-catalog`, `reviews-ratings-backend`, `reviews-ratings-frontend`.
+**Completed changes (archived):** `foundation-setup`, `frontend-tanstack-auth`, `username-auth`, `tvmaze-api`, `shared-show-catalog`, `reviews-ratings-backend`, `reviews-ratings-frontend`, `favorites-backend`, `favorites-frontend`.
 
 ---
 
@@ -193,7 +193,7 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   *Acceptance:* `GET /api/favorites` returns user-chosen favorite shows only; `GET /api/favorites/suggestions` returns suggested shows (not in favorites), scoped to the user's own reviews.
   *Ref: PRD §5.5*
 
-- [ ] **5.3 — Favorites UI (frontend)**
+- [x] **5.3 — Favorites UI (frontend)**
   Favorite toggle on show header; suggestion badge/panel for recommended shows (opt-in to favorite).
   *Ref: PRD §5.5*
 

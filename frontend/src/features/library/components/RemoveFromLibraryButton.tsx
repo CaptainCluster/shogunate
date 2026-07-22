@@ -22,7 +22,7 @@ export function RemoveFromLibraryButton({
   async function handleClick() {
     const confirmed = await confirm({
       title: 'Remove from library?',
-      message: `Remove "${showTitle}" from your library? This will permanently delete your reviews, watch history, and watch state for this show.`,
+      message: `Remove "${showTitle}" from your library? This will permanently delete your reviews, watch history, watch state, and favorites for this show.`,
       confirmLabel: 'Remove',
     })
 

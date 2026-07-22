@@ -13,6 +13,8 @@ export function HomePage() {
           <p>Signed in as {user.username}</p>
           <p>
             <Link to="/library">Browse your library</Link>
+            {' · '}
+            <Link to="/search">Search for shows</Link>
           </p>
           <button type="button" onClick={logout}>
             Log out

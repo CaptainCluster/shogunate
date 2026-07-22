@@ -1,5 +1,6 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../../lib/getErrorMessage'
+import { FavoriteToggle } from '../favorites/components/FavoriteToggle'
 import { WatchedReviewEditor } from '../reviews/components/WatchedReviewEditor'
 import { SeasonProgress } from '../watch/components/SeasonProgress'
 import { WatchButtonPair } from '../watch/components/WatchButtonPair'
@@ -10,6 +11,7 @@ import { formatLibraryStatus } from './formatLibraryStatus'
 import './LibraryPage.css'
 import '../watch/watch.css'
 import '../reviews/reviews.css'
+import '../favorites/favorites.css'
 
 export function ShowDetailPage() {
   const { id = '' } = useParams()
@@ -81,6 +83,7 @@ export function ShowDetailPage() {
               {getErrorMessage(watchMutations.error, 'Watch update failed')}
             </p>
           )}
+          <FavoriteToggle showId={data.id} />
           <WatchedReviewEditor
             watched={data.watched}
             className="show-review"

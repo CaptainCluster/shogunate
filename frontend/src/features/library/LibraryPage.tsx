@@ -1,74 +1,27 @@
-import type { FormEvent } from 'react'
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import type { ShowSearchResult, ShowSummary } from '../../api/showApi'
+import type { ShowSummary } from '../../api/showApi'
 import { getErrorMessage } from '../../lib/getErrorMessage'
-import { useAddShow, useShowLibrary, useShowSearch } from './hooks/useShowLibrary'
+import { FavoriteSuggestionsPanel } from '../favorites/components/FavoriteSuggestionsPanel'
+import { useFavorites } from '../favorites/hooks/useFavorites'
 import { RemoveFromLibraryButton } from './components/RemoveFromLibraryButton'
+import { useShowLibrary } from './hooks/useShowLibrary'
 import { formatLibraryStatus } from './formatLibraryStatus'
 import './LibraryPage.css'
+import '../favorites/favorites.css'
 
 export function LibraryPage() {
-  const [searchInput, setSearchInput] = useState('')
-  const [activeQuery, setActiveQuery] = useState('')
-
   const library = useShowLibrary()
-  const search = useShowSearch(activeQuery)
-  const addShow = useAddShow()
-
-  function handleSearch(event: FormEvent) {
-    event.preventDefault()
-    setActiveQuery(searchInput.trim())
-  }
+  const favorites = useFavorites()
+  const favoriteShowIds = new Set(favorites.data?.map((favorite) => favorite.showId) ?? [])
 
   return (
     <div className="library-page">
       <h1>Your library</h1>
+      <p>
+        <Link to="/search">Search for shows</Link>
+      </p>
 
-      <form className="library-search" onSubmit={handleSearch}>
-        <input
-          type="search"
-          value={searchInput}
-          onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search TVmaze for shows…"
-          aria-label="Search shows"
-        />
-        <button type="submit">Search</button>
-      </form>
-
-      {activeQuery.length >= 2 && (
-        <section className="library-section">
-          <h2>Search results</h2>
-          {search.isLoading && <p>Searching…</p>}
-          {search.error && (
-            <p className="library-error">{getErrorMessage(search.error, 'Search failed')}</p>
-          )}
-          {search.data?.length === 0 && !search.isLoading && <p>No shows found.</p>}
-          <ul className="library-list">
-            {search.data?.map((show: ShowSearchResult) => (
-              <li key={show.tvmazeId} className="library-card">
-                {show.posterUrl && (
-                  <img src={show.posterUrl} alt="" className="library-poster" />
-                )}
-                <div>
-                  <h3>{show.title}</h3>
-                  {show.overview && <p className="library-overview">{show.overview}</p>}
-                  <button
-                    type="button"
-                    disabled={addShow.isPending && addShow.variables === show.tvmazeId}
-                    onClick={() => addShow.mutate(show.tvmazeId)}
-                  >
-                    Add to library
-                  </button>
-                  {addShow.error && addShow.variables === show.tvmazeId && (
-                    <p className="library-error">{getErrorMessage(addShow.error, 'Add failed')}</p>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <FavoriteSuggestionsPanel />
 
       <section className="library-section">
         <h2>In your library</h2>
@@ -77,23 +30,30 @@ export function LibraryPage() {
           <p className="library-error">{getErrorMessage(library.error, 'Failed to load library')}</p>
         )}
         {library.data?.length === 0 && !library.isLoading && (
-          <p>No shows yet. Search above to add one.</p>
+          <p>
+            No shows yet. <Link to="/search">Search for shows</Link> to add one.
+          </p>
         )}
         <ul className="library-list">
           {library.data?.map((show: ShowSummary) => (
             <li key={show.id} className="library-card">
-              {show.posterUrl && (
-                <img src={show.posterUrl} alt="" className="library-poster" />
-              )}
-              <div>
-                <h3>
-                  <Link to={`/library/${show.id}`}>{show.title}</Link>
-                </h3>
-                <p className="library-meta">Status: {formatLibraryStatus(show.libraryStatus)}</p>
-                <RemoveFromLibraryButton showId={show.id} showTitle={show.title}>
-                  Remove
-                </RemoveFromLibraryButton>
+              <div className="library-card__main">
+                {show.posterUrl && (
+                  <img src={show.posterUrl} alt="" className="library-poster" />
+                )}
+                <div>
+                  <h3>
+                    <Link to={`/library/${show.id}`}>{show.title}</Link>
+                  </h3>
+                  <p className="library-meta">Status: {formatLibraryStatus(show.libraryStatus)}</p>
+                  <RemoveFromLibraryButton showId={show.id} showTitle={show.title}>
+                    Remove
+                  </RemoveFromLibraryButton>
+                </div>
               </div>
+              {favoriteShowIds.has(show.id) && (
+                <span className="favorite-badge library-card__favorite-badge">Favorite</span>
+              )}
             </li>
           ))}
         </ul>

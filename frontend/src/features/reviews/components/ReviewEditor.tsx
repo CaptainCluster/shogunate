@@ -60,6 +60,7 @@ function ReviewEditorForm({
   }
 
   const fieldId = `review-body-${targetType}-${targetId}`
+  const showReviewDetails = isValidRating(rating)
 
   return (
     <div className={`review-editor${compact ? ' review-editor--compact' : ''}`}>
@@ -71,37 +72,41 @@ function ReviewEditorForm({
           label={label ?? 'Rating'}
         />
       </div>
-      <label className="review-editor__label" htmlFor={fieldId}>
-        {compact ? 'Review' : 'Review text'}
-      </label>
-      <textarea
-        id={fieldId}
-        className="review-editor__body"
-        value={body}
-        disabled={mutations.isPending}
-        rows={compact ? 2 : 3}
-        placeholder={compact ? 'Write a review…' : undefined}
-        onChange={(event) => setBody(event.target.value)}
-      />
-      <div className="review-editor__actions">
-        <button
-          type="button"
-          disabled={mutations.isPending || !isValidRating(rating)}
-          onClick={handleSave}
-        >
-          Save review
-        </button>
-        {review && (
-          <button
-            type="button"
-            className="review-editor__delete"
+      {showReviewDetails && (
+        <>
+          <label className="review-editor__label" htmlFor={fieldId}>
+            {compact ? 'Review' : 'Review text'}
+          </label>
+          <textarea
+            id={fieldId}
+            className="review-editor__body"
+            value={body}
             disabled={mutations.isPending}
-            onClick={handleDelete}
-          >
-            Delete review
-          </button>
-        )}
-      </div>
+            rows={compact ? 2 : 3}
+            placeholder={compact ? 'Write a review…' : undefined}
+            onChange={(event) => setBody(event.target.value)}
+          />
+          <div className="review-editor__actions">
+            <button
+              type="button"
+              disabled={mutations.isPending || !isValidRating(rating)}
+              onClick={handleSave}
+            >
+              Save review
+            </button>
+            {review && (
+              <button
+                type="button"
+                className="review-editor__delete"
+                disabled={mutations.isPending}
+                onClick={handleDelete}
+              >
+                Delete review
+              </button>
+            )}
+          </div>
+        </>
+      )}
       {mutations.error && (
         <p className="library-error review-error">
           {getErrorMessage(mutations.error, 'Review update failed')}

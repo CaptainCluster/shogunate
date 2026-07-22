@@ -29,6 +29,19 @@ describe('ReviewEditor', () => {
     vi.clearAllMocks()
   })
 
+  it('shows only stars until a rating is selected', async () => {
+    vi.mocked(reviewApi.getReview).mockRejectedValue(new ApiError('Not found', 404))
+
+    const { container } = renderWithProviders(
+      <ReviewEditor targetType="SHOW" targetId="show-1" />,
+    )
+    const view = within(container)
+
+    await waitFor(() => expect(view.getByRole('slider')).toBeInTheDocument())
+    expect(view.queryByRole('textbox')).not.toBeInTheDocument()
+    expect(view.queryByRole('button', { name: 'Save review' })).not.toBeInTheDocument()
+  })
+
   it('creates a review when none exists', async () => {
     const user = userEvent.setup()
     vi.mocked(reviewApi.getReview).mockRejectedValue(new ApiError('Not found', 404))
@@ -47,9 +60,10 @@ describe('ReviewEditor', () => {
     )
     const view = within(container)
 
-    await waitFor(() => expect(view.getByRole('textbox')).toBeInTheDocument())
+    await waitFor(() => expect(view.getByRole('slider')).toBeInTheDocument())
 
     await user.click(container.querySelectorAll('.star-rating__half--left')[3]!)
+    await waitFor(() => expect(view.getByRole('textbox')).toBeInTheDocument())
     await user.type(view.getByRole('textbox'), 'Nice')
     await user.click(view.getByRole('button', { name: 'Save review' }))
 

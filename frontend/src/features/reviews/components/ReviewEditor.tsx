@@ -12,6 +12,7 @@ export interface ReviewEditorProps {
   targetId: string
   label?: string
   compact?: boolean
+  collapseExistingReview?: boolean
 }
 
 interface ReviewEditorFormProps {
@@ -20,6 +21,7 @@ interface ReviewEditorFormProps {
   label?: string
   review: Review | null
   compact?: boolean
+  collapseExistingReview?: boolean
 }
 
 function ReviewEditorForm({
@@ -28,10 +30,18 @@ function ReviewEditorForm({
   label,
   review,
   compact = false,
+  collapseExistingReview = false,
 }: ReviewEditorFormProps) {
   const mutations = useReviewMutations(targetType, targetId)
   const [rating, setRating] = useState<number | null>(review?.rating ?? null)
   const [body, setBody] = useState(review?.body ?? '')
+  const [detailsExpanded, setDetailsExpanded] = useState(false)
+
+  const hasSavedReview = review !== null
+  const canCollapseExisting = collapseExistingReview && hasSavedReview
+  const showReviewDetails = canCollapseExisting
+    ? detailsExpanded && isValidRating(rating)
+    : isValidRating(rating)
 
   function handleSave() {
     if (!isValidRating(rating)) {
@@ -60,17 +70,28 @@ function ReviewEditorForm({
   }
 
   const fieldId = `review-body-${targetType}-${targetId}`
-  const showReviewDetails = isValidRating(rating)
 
   return (
     <div className={`review-editor${compact ? ' review-editor--compact' : ''}`}>
-      <div className="review-editor__rating">
+      <div className="review-editor__rating-row">
         <StarRatingInput
           value={rating}
           onChange={setRating}
           disabled={mutations.isPending}
           label={label ?? 'Rating'}
         />
+        {canCollapseExisting && (
+          <button
+            type="button"
+            className={`review-editor__expand${detailsExpanded ? ' review-editor__expand--open' : ''}`}
+            aria-expanded={detailsExpanded}
+            aria-label={detailsExpanded ? 'Hide review details' : 'Show review details'}
+            disabled={mutations.isPending}
+            onClick={() => setDetailsExpanded((open) => !open)}
+          >
+            ▼
+          </button>
+        )}
       </div>
       {showReviewDetails && (
         <>
@@ -116,7 +137,13 @@ function ReviewEditorForm({
   )
 }
 
-export function ReviewEditor({ targetType, targetId, label, compact = false }: ReviewEditorProps) {
+export function ReviewEditor({
+  targetType,
+  targetId,
+  label,
+  compact = false,
+  collapseExistingReview = false,
+}: ReviewEditorProps) {
   const review = useReview(targetType, targetId)
 
   if (review.isLoading) {
@@ -143,6 +170,7 @@ export function ReviewEditor({ targetType, targetId, label, compact = false }: R
       label={label}
       review={review.data ?? null}
       compact={compact}
+      collapseExistingReview={collapseExistingReview}
     />
   )
 }

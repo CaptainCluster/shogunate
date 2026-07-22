@@ -151,6 +151,7 @@ export function ShowDetailPage() {
                   <WatchedReviewEditor
                     watched={episode.watched}
                     compact
+                    collapseExistingReview
                     targetType="EPISODE"
                     targetId={episode.id}
                     label={`Rate episode ${episode.episodeNumber}`}

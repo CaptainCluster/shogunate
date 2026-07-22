@@ -1,23 +1,22 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../../lib/getErrorMessage'
+import { ReviewCollapsible } from '../reviews/components/ReviewCollapsible'
+import { ReviewEditor } from '../reviews/components/ReviewEditor'
 import { SeasonProgress } from '../watch/components/SeasonProgress'
 import { WatchButtonPair } from '../watch/components/WatchButtonPair'
 import { useWatchMutations } from '../watch/hooks/useWatchMutations'
-import {
-  useRemoveShow,
-  useShowDetail,
-  useUpdateLibraryStatus,
-} from './hooks/useShowLibrary'
+import { RemoveFromLibraryButton } from './components/RemoveFromLibraryButton'
+import { useShowDetail, useUpdateLibraryStatus } from './hooks/useShowLibrary'
 import { formatLibraryStatus } from './formatLibraryStatus'
 import './LibraryPage.css'
 import '../watch/watch.css'
+import '../reviews/reviews.css'
 
 export function ShowDetailPage() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const show = useShowDetail(id)
   const updateStatus = useUpdateLibraryStatus(id)
-  const removeShow = useRemoveShow()
   const watchMutations = useWatchMutations(id)
 
   if (show.isLoading) {
@@ -43,12 +42,6 @@ export function ShowDetailPage() {
     markShow: watchMutations.markShow,
     unmarkShow: watchMutations.unmarkShow,
     pendingAction: watchMutations.pendingAction,
-  }
-
-  function handleRemove() {
-    removeShow.mutate(id, {
-      onSuccess: () => navigate('/library'),
-    })
   }
 
   return (
@@ -89,6 +82,9 @@ export function ShowDetailPage() {
               {getErrorMessage(watchMutations.error, 'Watch update failed')}
             </p>
           )}
+          <div className="show-review">
+            <ReviewEditor targetType="SHOW" targetId={data.id} label={`Rate ${data.title}`} />
+          </div>
           <label htmlFor="library-status">Library status</label>
           {data.libraryStatus === 'WATCHED' ? (
             <p id="library-status">{formatLibraryStatus(data.libraryStatus)}</p>
@@ -106,9 +102,11 @@ export function ShowDetailPage() {
             </select>
           )}
           <p>
-            <button type="button" onClick={handleRemove} disabled={removeShow.isPending}>
-              Remove from library
-            </button>
+            <RemoveFromLibraryButton
+              showId={id}
+              showTitle={data.title}
+              onSuccess={() => navigate('/library')}
+            />
           </p>
         </div>
       </div>
@@ -129,6 +127,13 @@ export function ShowDetailPage() {
               mutations={mutationProps}
             />
           </div>
+          <div className="season-review">
+            <ReviewEditor
+              targetType="SEASON"
+              targetId={season.id}
+              label={`Rate ${season.name ?? `Season ${season.seasonNumber}`}`}
+            />
+          </div>
           <ul>
             {season.episodes.map((episode) => (
               <li
@@ -146,6 +151,11 @@ export function ShowDetailPage() {
                   watchedAt={episode.watchedAt}
                   label={`Episode ${episode.episodeNumber}`}
                   mutations={mutationProps}
+                />
+                <ReviewCollapsible
+                  targetType="EPISODE"
+                  targetId={episode.id}
+                  label={`Rate episode ${episode.episodeNumber}`}
                 />
               </li>
             ))}

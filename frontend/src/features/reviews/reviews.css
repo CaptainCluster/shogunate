@@ -1,0 +1,68 @@
+.review-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.review-editor__label {
+  font-size: 0.875rem;
+}
+
+.review-editor__body {
+  width: 100%;
+  max-width: 32rem;
+  font: inherit;
+}
+
+.review-editor__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.review-editor__delete {
+  color: inherit;
+}
+
+.review-loading {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+.review-error {
+  margin: 0.25rem 0 0;
+}
+
+.review-collapsible {
+  margin-top: 0.25rem;
+}
+
+.review-collapsible__summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  list-style: none;
+}
+
+.review-collapsible__summary::-webkit-details-marker {
+  display: none;
+}
+
+.review-collapsible__label {
+  font-size: 0.875rem;
+  text-decoration: underline;
+}
+
+.review-collapsible__content {
+  margin-top: 0.25rem;
+}
+
+.season-review {
+  margin-top: 0.5rem;
+}
+
+.show-review {
+  margin-top: 1rem;
+}

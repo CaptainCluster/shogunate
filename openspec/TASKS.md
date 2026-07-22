@@ -8,7 +8,7 @@ Companion to `docs/PRD.md` and `docs/ARCHITECTURE.md`. Tasks are grouped into ph
 
 Checkboxes track phase-level progress. When an OpenSpec change completes and is archived, check off the corresponding phase task(s) here in the same commit.
 
-**Completed changes (archived):** `foundation-setup`, `frontend-tanstack-auth`, `username-auth`, `tvmaze-api`, `shared-show-catalog`, `reviews-ratings-backend`.
+**Completed changes (archived):** `foundation-setup`, `frontend-tanstack-auth`, `username-auth`, `tvmaze-api`, `shared-show-catalog`, `reviews-ratings-backend`, `reviews-ratings-frontend`.
 
 ---
 
@@ -169,7 +169,7 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   *Acceptance:* Reviews at episode/season/show level are stored and retrieved independently, with no roll-up logic between levels. A user cannot fetch or modify another user's review.
   *Ref: PRD §5.4*
 
-- [ ] **4.3 — Review UI (frontend)**
+- [x] **4.3 — Review UI (frontend)**
   Star-rating input (half-star precision) + text field, attachable to episode/season/show detail views. Remove-from-library on show detail and library list MUST prompt for confirmation (via existing `useConfirm`) warning that reviews, watch history, and watch state for the show will be permanently deleted.
   *Acceptance:* Remove without confirming sends no API request; confirming proceeds with deletion; cancel leaves the show in the library.
   *Ref: PRD §5.4; Architecture §7.1*

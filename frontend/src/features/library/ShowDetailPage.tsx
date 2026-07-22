@@ -1,6 +1,6 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../../lib/getErrorMessage'
-import { ReviewEditor } from '../reviews/components/ReviewEditor'
+import { WatchedReviewEditor } from '../reviews/components/WatchedReviewEditor'
 import { SeasonProgress } from '../watch/components/SeasonProgress'
 import { WatchButtonPair } from '../watch/components/WatchButtonPair'
 import { useWatchMutations } from '../watch/hooks/useWatchMutations'
@@ -81,9 +81,13 @@ export function ShowDetailPage() {
               {getErrorMessage(watchMutations.error, 'Watch update failed')}
             </p>
           )}
-          <div className="show-review">
-            <ReviewEditor targetType="SHOW" targetId={data.id} label={`Rate ${data.title}`} />
-          </div>
+          <WatchedReviewEditor
+            watched={data.watched}
+            className="show-review"
+            targetType="SHOW"
+            targetId={data.id}
+            label={`Rate ${data.title}`}
+          />
           <label htmlFor="library-status">Library status</label>
           {data.libraryStatus === 'WATCHED' ? (
             <p id="library-status">{formatLibraryStatus(data.libraryStatus)}</p>
@@ -126,13 +130,13 @@ export function ShowDetailPage() {
               mutations={mutationProps}
             />
           </div>
-          <div className="season-review">
-            <ReviewEditor
-              targetType="SEASON"
-              targetId={season.id}
-              label={`Rate ${season.name ?? `Season ${season.seasonNumber}`}`}
-            />
-          </div>
+          <WatchedReviewEditor
+            watched={season.watched}
+            className="season-review"
+            targetType="SEASON"
+            targetId={season.id}
+            label={`Rate ${season.name ?? `Season ${season.seasonNumber}`}`}
+          />
           <ul>
             {season.episodes.map((episode) => (
               <li
@@ -144,7 +148,8 @@ export function ShowDetailPage() {
                     {episode.episodeNumber}. {episode.title ?? 'Untitled'}
                     {episode.airDate && ` (${episode.airDate})`}
                   </div>
-                  <ReviewEditor
+                  <WatchedReviewEditor
+                    watched={episode.watched}
                     compact
                     targetType="EPISODE"
                     targetId={episode.id}

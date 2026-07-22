@@ -7,7 +7,7 @@ import { useReview } from '../hooks/useReview'
 import { useReviewMutations } from '../hooks/useReviewMutations'
 import '../reviews.css'
 
-interface ReviewEditorProps {
+export interface ReviewEditorProps {
   targetType: ReviewTargetType
   targetId: string
   label?: string

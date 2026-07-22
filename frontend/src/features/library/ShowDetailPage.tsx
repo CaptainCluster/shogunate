@@ -1,6 +1,5 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../../lib/getErrorMessage'
-import { ReviewCollapsible } from '../reviews/components/ReviewCollapsible'
 import { ReviewEditor } from '../reviews/components/ReviewEditor'
 import { SeasonProgress } from '../watch/components/SeasonProgress'
 import { WatchButtonPair } from '../watch/components/WatchButtonPair'
@@ -140,23 +139,28 @@ export function ShowDetailPage() {
                 key={episode.id}
                 className={`episode-row${episode.watched ? ' episode-row--watched' : ''}`}
               >
-                <span className="episode-title">
-                  {episode.episodeNumber}. {episode.title ?? 'Untitled'}
-                  {episode.airDate && ` (${episode.airDate})`}
-                </span>
-                <WatchButtonPair
-                  targetType="EPISODE"
-                  targetId={episode.id}
-                  watched={episode.watched}
-                  watchedAt={episode.watchedAt}
-                  label={`Episode ${episode.episodeNumber}`}
-                  mutations={mutationProps}
-                />
-                <ReviewCollapsible
-                  targetType="EPISODE"
-                  targetId={episode.id}
-                  label={`Rate episode ${episode.episodeNumber}`}
-                />
+                <div className="episode-row__content">
+                  <div className="episode-title">
+                    {episode.episodeNumber}. {episode.title ?? 'Untitled'}
+                    {episode.airDate && ` (${episode.airDate})`}
+                  </div>
+                  <ReviewEditor
+                    compact
+                    targetType="EPISODE"
+                    targetId={episode.id}
+                    label={`Rate episode ${episode.episodeNumber}`}
+                  />
+                </div>
+                <div className="episode-row__watch">
+                  <WatchButtonPair
+                    targetType="EPISODE"
+                    targetId={episode.id}
+                    watched={episode.watched}
+                    watchedAt={episode.watchedAt}
+                    label={`Episode ${episode.episodeNumber}`}
+                    mutations={mutationProps}
+                  />
+                </div>
               </li>
             ))}
           </ul>

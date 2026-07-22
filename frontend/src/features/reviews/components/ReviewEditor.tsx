@@ -11,6 +11,7 @@ interface ReviewEditorProps {
   targetType: ReviewTargetType
   targetId: string
   label?: string
+  compact?: boolean
 }
 
 interface ReviewEditorFormProps {
@@ -18,9 +19,16 @@ interface ReviewEditorFormProps {
   targetId: string
   label?: string
   review: Review | null
+  compact?: boolean
 }
 
-function ReviewEditorForm({ targetType, targetId, label, review }: ReviewEditorFormProps) {
+function ReviewEditorForm({
+  targetType,
+  targetId,
+  label,
+  review,
+  compact = false,
+}: ReviewEditorFormProps) {
   const mutations = useReviewMutations(targetType, targetId)
   const [rating, setRating] = useState<number | null>(review?.rating ?? null)
   const [body, setBody] = useState(review?.body ?? '')
@@ -54,7 +62,7 @@ function ReviewEditorForm({ targetType, targetId, label, review }: ReviewEditorF
   const fieldId = `review-body-${targetType}-${targetId}`
 
   return (
-    <div className="review-editor">
+    <div className={`review-editor${compact ? ' review-editor--compact' : ''}`}>
       <div className="review-editor__rating">
         <StarRatingInput
           value={rating}
@@ -64,14 +72,15 @@ function ReviewEditorForm({ targetType, targetId, label, review }: ReviewEditorF
         />
       </div>
       <label className="review-editor__label" htmlFor={fieldId}>
-        Review text
+        {compact ? 'Review' : 'Review text'}
       </label>
       <textarea
         id={fieldId}
         className="review-editor__body"
         value={body}
         disabled={mutations.isPending}
-        rows={3}
+        rows={compact ? 2 : 3}
+        placeholder={compact ? 'Write a review…' : undefined}
         onChange={(event) => setBody(event.target.value)}
       />
       <div className="review-editor__actions">
@@ -102,7 +111,7 @@ function ReviewEditorForm({ targetType, targetId, label, review }: ReviewEditorF
   )
 }
 
-export function ReviewEditor({ targetType, targetId, label }: ReviewEditorProps) {
+export function ReviewEditor({ targetType, targetId, label, compact = false }: ReviewEditorProps) {
   const review = useReview(targetType, targetId)
 
   if (review.isLoading) {
@@ -128,6 +137,7 @@ export function ReviewEditor({ targetType, targetId, label }: ReviewEditorProps)
       targetId={targetId}
       label={label}
       review={review.data ?? null}
+      compact={compact}
     />
   )
 }

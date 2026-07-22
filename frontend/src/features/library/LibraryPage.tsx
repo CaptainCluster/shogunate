@@ -3,7 +3,8 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import type { ShowSearchResult, ShowSummary } from '../../api/showApi'
 import { getErrorMessage } from '../../lib/getErrorMessage'
-import { useAddShow, useRemoveShow, useShowLibrary, useShowSearch } from './hooks/useShowLibrary'
+import { useAddShow, useShowLibrary, useShowSearch } from './hooks/useShowLibrary'
+import { RemoveFromLibraryButton } from './components/RemoveFromLibraryButton'
 import { formatLibraryStatus } from './formatLibraryStatus'
 import './LibraryPage.css'
 
@@ -14,7 +15,6 @@ export function LibraryPage() {
   const library = useShowLibrary()
   const search = useShowSearch(activeQuery)
   const addShow = useAddShow()
-  const removeShow = useRemoveShow()
 
   function handleSearch(event: FormEvent) {
     event.preventDefault()
@@ -90,13 +90,9 @@ export function LibraryPage() {
                   <Link to={`/library/${show.id}`}>{show.title}</Link>
                 </h3>
                 <p className="library-meta">Status: {formatLibraryStatus(show.libraryStatus)}</p>
-                <button
-                  type="button"
-                  disabled={removeShow.isPending}
-                  onClick={() => removeShow.mutate(show.id)}
-                >
+                <RemoveFromLibraryButton showId={show.id} showTitle={show.title}>
                   Remove
-                </button>
+                </RemoveFromLibraryButton>
               </div>
             </li>
           ))}

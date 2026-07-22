@@ -1,23 +1,21 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../../lib/getErrorMessage'
+import { WatchedReviewEditor } from '../reviews/components/WatchedReviewEditor'
 import { SeasonProgress } from '../watch/components/SeasonProgress'
 import { WatchButtonPair } from '../watch/components/WatchButtonPair'
 import { useWatchMutations } from '../watch/hooks/useWatchMutations'
-import {
-  useRemoveShow,
-  useShowDetail,
-  useUpdateLibraryStatus,
-} from './hooks/useShowLibrary'
+import { RemoveFromLibraryButton } from './components/RemoveFromLibraryButton'
+import { useShowDetail, useUpdateLibraryStatus } from './hooks/useShowLibrary'
 import { formatLibraryStatus } from './formatLibraryStatus'
 import './LibraryPage.css'
 import '../watch/watch.css'
+import '../reviews/reviews.css'
 
 export function ShowDetailPage() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const show = useShowDetail(id)
   const updateStatus = useUpdateLibraryStatus(id)
-  const removeShow = useRemoveShow()
   const watchMutations = useWatchMutations(id)
 
   if (show.isLoading) {
@@ -43,12 +41,6 @@ export function ShowDetailPage() {
     markShow: watchMutations.markShow,
     unmarkShow: watchMutations.unmarkShow,
     pendingAction: watchMutations.pendingAction,
-  }
-
-  function handleRemove() {
-    removeShow.mutate(id, {
-      onSuccess: () => navigate('/library'),
-    })
   }
 
   return (
@@ -89,6 +81,13 @@ export function ShowDetailPage() {
               {getErrorMessage(watchMutations.error, 'Watch update failed')}
             </p>
           )}
+          <WatchedReviewEditor
+            watched={data.watched}
+            className="show-review"
+            targetType="SHOW"
+            targetId={data.id}
+            label={`Rate ${data.title}`}
+          />
           <label htmlFor="library-status">Library status</label>
           {data.libraryStatus === 'WATCHED' ? (
             <p id="library-status">{formatLibraryStatus(data.libraryStatus)}</p>
@@ -106,9 +105,11 @@ export function ShowDetailPage() {
             </select>
           )}
           <p>
-            <button type="button" onClick={handleRemove} disabled={removeShow.isPending}>
-              Remove from library
-            </button>
+            <RemoveFromLibraryButton
+              showId={id}
+              showTitle={data.title}
+              onSuccess={() => navigate('/library')}
+            />
           </p>
         </div>
       </div>
@@ -129,24 +130,42 @@ export function ShowDetailPage() {
               mutations={mutationProps}
             />
           </div>
+          <WatchedReviewEditor
+            watched={season.watched}
+            className="season-review"
+            targetType="SEASON"
+            targetId={season.id}
+            label={`Rate ${season.name ?? `Season ${season.seasonNumber}`}`}
+          />
           <ul>
             {season.episodes.map((episode) => (
               <li
                 key={episode.id}
                 className={`episode-row${episode.watched ? ' episode-row--watched' : ''}`}
               >
-                <span className="episode-title">
-                  {episode.episodeNumber}. {episode.title ?? 'Untitled'}
-                  {episode.airDate && ` (${episode.airDate})`}
-                </span>
-                <WatchButtonPair
-                  targetType="EPISODE"
-                  targetId={episode.id}
-                  watched={episode.watched}
-                  watchedAt={episode.watchedAt}
-                  label={`Episode ${episode.episodeNumber}`}
-                  mutations={mutationProps}
-                />
+                <div className="episode-row__content">
+                  <div className="episode-title">
+                    {episode.episodeNumber}. {episode.title ?? 'Untitled'}
+                    {episode.airDate && ` (${episode.airDate})`}
+                  </div>
+                  <WatchedReviewEditor
+                    watched={episode.watched}
+                    compact
+                    targetType="EPISODE"
+                    targetId={episode.id}
+                    label={`Rate episode ${episode.episodeNumber}`}
+                  />
+                </div>
+                <div className="episode-row__watch">
+                  <WatchButtonPair
+                    targetType="EPISODE"
+                    targetId={episode.id}
+                    watched={episode.watched}
+                    watchedAt={episode.watchedAt}
+                    label={`Episode ${episode.episodeNumber}`}
+                    mutations={mutationProps}
+                  />
+                </div>
               </li>
             ))}
           </ul>

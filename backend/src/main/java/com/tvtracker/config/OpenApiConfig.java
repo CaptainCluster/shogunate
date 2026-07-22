@@ -20,11 +20,13 @@ public class OpenApiConfig {
                         .description("TV show tracker REST API")
                         .version("1.0"))
                 .components(new Components()
-                    .addSecuritySchemes(BEARER_SCHEME_NAME, new SecurityScheme()
-                            .name(BEARER_SCHEME_NAME)
-                            .type(SecurityScheme.Type.HTTP)
-                            .scheme("bearer")
-                            .bearerFormat("JWT")))
-                    .addSecurityItem(new SecurityRequirement().addList(BEARER_SCHEME_NAME));
+                        .addSecuritySchemes(
+                                BEARER_SCHEME_NAME,
+                                new SecurityScheme()
+                                        .name(BEARER_SCHEME_NAME)
+                                        .type(SecurityScheme.Type.HTTP)
+                                        .scheme("bearer")
+                                        .bearerFormat("JWT")))
+                .addSecurityItem(new SecurityRequirement().addList(BEARER_SCHEME_NAME));
     }
 }

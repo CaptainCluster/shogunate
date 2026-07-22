@@ -22,7 +22,12 @@ For each show in a user's library, the system SHALL calculate the elapsed time b
 - THEN shows are ordered by that elapsed duration, longest first
 
 ### Requirement: Favorites Reporting
-The system SHALL surface the user's favorite shows and seasons, consistent with the rules defined in the Favorite specification.
+The system SHALL surface the user's favorite shows, consistent with the rules defined in the Favorite specification. Favorites reporting MUST include only shows the user has explicitly added; suggestion-only shows MUST NOT be included.
+
+#### Scenario: Analytics favorites match user-chosen favorites
+- **GIVEN** a user has one show explicitly favorited and another show that appears only in suggestions
+- **WHEN** the user requests favorites analytics
+- **THEN** only the explicitly favorited show is reported
 
 ### Requirement: Per-User Scope
 All analytics MUST be computed exclusively from the requesting user's own watch history, reviews, and favorites. No analytic may aggregate or compare data across users.

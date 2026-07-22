@@ -4,6 +4,7 @@ import com.tvtracker.common.TargetType;
 import com.tvtracker.common.exception.ConflictException;
 import com.tvtracker.common.exception.NotFoundException;
 import com.tvtracker.common.exception.ValidationException;
+import com.tvtracker.favorite.FavoriteRepository;
 import com.tvtracker.review.ReviewRepository;
 import com.tvtracker.show.dto.EpisodeResponse;
 import com.tvtracker.show.dto.SeasonResponse;
@@ -41,6 +42,7 @@ public class ShowService {
     private final UserWatchStateRepository userWatchStateRepository;
     private final WatchEventRepository watchEventRepository;
     private final ReviewRepository reviewRepository;
+    private final FavoriteRepository favoriteRepository;
 
     public List<ShowSearchResult> search(String query) {
         if (query == null || query.isBlank()) {
@@ -153,6 +155,7 @@ public class ShowService {
         userWatchStateRepository.deleteByUserIdAndTargetIdIn(userId, targetIds);
         watchEventRepository.deleteByUserIdAndTargetIdIn(userId, targetIds);
         reviewRepository.deleteByUserIdAndTargetIdIn(userId, targetIds);
+        favoriteRepository.deleteByUserIdAndShowId(userId, showId);
 
         userLibraryRepository.delete(entry);
 

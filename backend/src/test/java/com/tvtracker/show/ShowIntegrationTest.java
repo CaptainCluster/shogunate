@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tvtracker.auth.dto.LoginRequest;
 import com.tvtracker.auth.dto.RegisterRequest;
+import com.tvtracker.favorite.FavoriteRepository;
 import com.tvtracker.review.ReviewRepository;
 import com.tvtracker.show.dto.AddShowRequest;
 import com.tvtracker.show.tvmaze.TvmazeClient;
@@ -72,6 +73,9 @@ class ShowIntegrationTest {
     @Autowired
     private ReviewRepository reviewRepository;
 
+    @Autowired
+    private FavoriteRepository favoriteRepository;
+
     @MockitoBean
     private TvmazeClient tvmazeClient;
 
@@ -79,6 +83,7 @@ class ShowIntegrationTest {
 
     @BeforeEach
     void resetDatabaseAndStubTvmaze() {
+        favoriteRepository.deleteAll();
         reviewRepository.deleteAll();
         watchEventRepository.deleteAll();
         userWatchStateRepository.deleteAll();
@@ -298,6 +303,37 @@ class ShowIntegrationTest {
                 .andExpect(status().isNoContent());
 
         org.junit.jupiter.api.Assertions.assertEquals(0, reviewRepository.count());
+    }
+
+    @Test
+    void removeFromLibraryDeletesFavorites() throws Exception {
+        int tvmazeId = 113;
+        String token = registerAndLogin("show_remove_favorites");
+
+        MvcResult addResult = mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String showId = objectMapper
+                .readTree(addResult.getResponse().getContentAsString())
+                .get("id")
+                .asText();
+
+        mockMvc.perform(post("/api/favorites")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"showId\":\"" + showId + "\"}"))
+                .andExpect(status().isCreated());
+
+        org.junit.jupiter.api.Assertions.assertEquals(1, favoriteRepository.count());
+
+        mockMvc.perform(delete("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        org.junit.jupiter.api.Assertions.assertEquals(0, favoriteRepository.count());
     }
 
     private String registerAndLogin(String username) throws Exception {

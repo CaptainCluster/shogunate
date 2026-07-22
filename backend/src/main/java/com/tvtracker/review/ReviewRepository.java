@@ -2,6 +2,7 @@ package com.tvtracker.review;
 
 import com.tvtracker.common.TargetType;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,8 @@ public interface ReviewRepository extends JpaRepository<Review, UUID> {
     Optional<Review> findByUserIdAndTargetTypeAndTargetId(UUID userId, TargetType targetType, UUID targetId);
 
     Optional<Review> findByIdAndUserId(UUID id, UUID userId);
+
+    List<Review> findByUserIdAndTargetTypeIn(UUID userId, Collection<TargetType> targetTypes);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("UPDATE Review r SET r.rating = :rating, r.body = :body WHERE r.id = :id AND r.userId = :userId")

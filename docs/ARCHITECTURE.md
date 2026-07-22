@@ -193,9 +193,7 @@ erDiagram
     FAVORITES {
         uuid id PK
         uuid user_id FK
-        text target_type
-        uuid target_id
-        boolean is_manual
+        uuid show_id FK
         timestamp created_at
     }
 ```
@@ -204,12 +202,13 @@ erDiagram
 - `shows`, `seasons`, `episodes` are a **shared global catalog** keyed by `tvmaze_id` (unique on `shows`). No `user_id` on catalog tables.
 - `user_library` links users to catalog shows: `library_status` is `'NONE' | 'PLAN_TO_WATCH'`.
 - Current watched state lives in `user_watch_state` (per user, per catalog target) — not on catalog rows.
-- `target_type` (on `reviews`, `watch_events`, `favorites`, `user_watch_state`): `'EPISODE' | 'SEASON' | 'SHOW'`.
+- `target_type` (on `reviews`, `watch_events`, `user_watch_state`): `'EPISODE' | 'SEASON' | 'SHOW'`.
+- `favorites` stores show-only user choices: `(user_id, show_id)` unique.
 - `rating` on `reviews`: `NUMERIC(2,1)`, application-validated to `{1.0, 1.5, 2.0, ..., 5.0}` (0.5 increments).
 - `reviews.updated_at` is nullable on insert; a Postgres `BEFORE UPDATE` trigger sets it to `NOW()` — the application never assigns `updated_at`.
 - `watch_events.action`: `'WATCHED' | 'UNWATCHED'`.
 - `watch_events` is **append-only** during normal watch operations.
-- Unique constraints: `user_library(user_id, show_id)`, `reviews(user_id, target_type, target_id)`, `favorites(user_id, target_type, target_id)`.
+- Unique constraints: `user_library(user_id, show_id)`, `reviews(user_id, target_type, target_id)`, `favorites(user_id, show_id)`.
 - Indexes: `user_library(user_id)`, `seasons(show_id)`, `episodes(season_id)`, `user_watch_state(user_id, target_type, target_id)`.
 - Library access is scoped via `user_library` membership checks on every show detail/list query. Reviews, watch events, and favorites remain scoped by `user_id`. Catalog metadata is shared but never exposed without library membership.
 
@@ -288,7 +287,8 @@ The entire cascade is one atomic transaction (per PRD §8.3) — a partial casca
 Representative queries:
 - **Watch counts by period:** `COUNT(*) FROM watch_events WHERE user_id = ? AND action = 'WATCHED' AND occurred_at BETWEEN ? AND ? GROUP BY target_type`
 - **Longest time to watch a show:** for each show, `MAX(occurred_at) - MIN(occurred_at)` over `watch_events` where `target_type = 'EPISODE' AND action = 'WATCHED'`, grouped by the episode's parent show.
-- **Favorites:** `AVG(rating) FROM reviews WHERE target_type IN ('SHOW','SEASON') GROUP BY target_id`, unioned with manually-flagged rows from `favorites`.
+- **Favorites (stored):** rows in `favorites` — user-chosen shows only.
+- **Favorite suggestions (computed):** weighted scores from user's SHOW/SEASON reviews (season review contributes `rating / season_count`; show review at full weight); per-show max contribution; global max ties; excludes already-favorited shows.
 
 ---
 

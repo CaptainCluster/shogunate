@@ -52,6 +52,16 @@ class OpenApiIntegrationTest {
                 .andExpect(jsonPath("$.paths['/api/reviews/{id}'].put.summary")
                         .value("Update the authenticated user's review"))
                 .andExpect(jsonPath("$.paths['/api/reviews/{id}'].delete.summary")
-                        .value("Delete the authenticated user's review"));
+                        .value("Delete the authenticated user's review"))
+                .andExpect(jsonPath("$.paths['/api/favorites'].get.summary")
+                        .value("List the authenticated user's favorite shows"))
+                .andExpect(jsonPath("$.paths['/api/favorites/suggestions'].get.summary")
+                        .value("List show suggestions based on weighted review scores"))
+                .andExpect(jsonPath("$.paths['/api/favorites/status'].get.summary")
+                        .value("Get favorite and suggestion status for a show"))
+                .andExpect(jsonPath("$.paths['/api/favorites'].post.summary")
+                        .value("Add a show to the authenticated user's favorites"))
+                .andExpect(jsonPath("$.paths['/api/favorites/{showId}'].delete.summary")
+                        .value("Remove a show from the authenticated user's favorites"));
     }
 }

@@ -184,21 +184,21 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ## Phase 5: Favorites
 
-- [ ] **5.1 —** `favorites` **table (migration)**
-  Unique on `(user_id, target_type, target_id)`; `target_type` restricted to `SHOW`/`SEASON` at the application layer.
-  *Ref: Architecture §3, and the earlier discussion of the* `target_type` *discriminator pattern*
+- [x] **5.1 —** `favorites` **table (migration)**
+  Unique on `(user_id, show_id)`; show-only favorites.
+  *Ref: Architecture §3*
 
-- [ ] **5.2 — Favorite auto-suggestion + manual override (backend)**
-  `AnalyticsService` (or `FavoriteService`, reading from reviews) computes auto-suggested favorites by average rating; `FavoriteController` exposes manual flag/unflag via `POST`/`DELETE /api/favorites`.
-  *Acceptance:* `GET` for favorites returns both manually-flagged items and auto-suggested ones, distinguishable via `is_manual`.
+- [x] **5.2 — Favorite suggestions + manual favorites (backend)**
+  `FavoriteService` computes show suggestions from weighted SHOW/SEASON review scores (season review = rating ÷ season count); `FavoriteController` exposes `GET /api/favorites`, `GET /api/favorites/suggestions`, `GET /api/favorites/status`, `POST`/`DELETE /api/favorites`.
+  *Acceptance:* `GET /api/favorites` returns user-chosen favorite shows only; `GET /api/favorites/suggestions` returns suggested shows (not in favorites), scoped to the user's own reviews.
   *Ref: PRD §5.5*
 
 - [ ] **5.3 — Favorites UI (frontend)**
-  Favorite toggle on show/season views; visual distinction between auto-suggested and manually-flagged.
+  Favorite toggle on show header; suggestion badge/panel for recommended shows (opt-in to favorite).
   *Ref: PRD §5.5*
 
-- [ ] **5.4 — Tests**
-  Unit tests for the auto-suggestion calculation. Integration tests for manual flag/unflag.
+- [x] **5.4 — Tests**
+  Unit tests for weighted suggestion calculation. Integration tests for add/remove favorite and suggestions separation.
   *Ref: Architecture §8.3*
 
 ---

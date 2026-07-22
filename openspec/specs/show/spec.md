@@ -168,6 +168,15 @@ When a user removes a show from their library, the system MUST delete all of tha
 - **THEN** all of that user's reviews for targets in that show hierarchy are deleted
 - **AND** reviews for the same catalog targets belonging to other users are unchanged
 
+### Requirement: Favorite Cleanup on Library Removal
+When a user removes a show from their library, the system MUST delete that user's favorite row for that show, if one exists.
+
+#### Scenario: Favorite row deleted on library removal
+- **GIVEN** a user has favorited a show in their library
+- **WHEN** the user removes that show from their library
+- **THEN** the user's favorite row for that show is deleted
+- **AND** favorites for the same show belonging to other users are unchanged
+
 ### Requirement: Show Detail Includes Watch State
 When a user requests show detail for a show in their library, the response SHALL include the user's current watched state and watched timestamp for the show, each season, and each episode.
 

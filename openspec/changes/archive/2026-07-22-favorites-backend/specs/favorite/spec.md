@@ -1,9 +1,18 @@
-# Favorite Specification
+## REMOVED Requirements
 
-## Purpose
-Identifying a user's favorite shows through explicit user choice, with separate rating-based show suggestions computed from the user's own reviews.
+### Requirement: Auto-Suggested Favorites
+**Reason**: Auto-suggestions are informational only; they no longer appear in the favorites list until the user explicitly adds a show.
+**Migration**: Use `GET /api/favorites/suggestions` for rating-based recommendations; use `POST /api/favorites` to add a show to favorites.
 
-## Requirements
+### Requirement: Manual Override
+**Reason**: Replaced by explicit show-only favorites and a separate suggestions API. There is no auto-inclusion to override.
+**Migration**: Users add favorites via `POST /api/favorites` and remove via `DELETE /api/favorites/{showId}`.
+
+### Requirement: Distinguishing Favorite Source
+**Reason**: Favorites and suggestions are separate API surfaces; favorites are always user-chosen. Source distinction applies between favorites list and suggestions list, not within a merged favorites list.
+**Migration**: Frontend compares `GET /api/favorites` with `GET /api/favorites/suggestions` or uses `GET /api/favorites/status?showId=`.
+
+## ADDED Requirements
 
 ### Requirement: Show-Only Favorites
 The system SHALL allow a user to mark shows as favorites. Only shows MAY be favorited; seasons and episodes MUST NOT be favoritable targets.

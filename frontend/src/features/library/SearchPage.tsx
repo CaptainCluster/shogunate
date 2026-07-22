@@ -47,22 +47,24 @@ export function SearchPage() {
           <ul className="library-list">
             {search.data?.map((show: ShowSearchResult) => (
               <li key={show.tvmazeId} className="library-card">
-                {show.posterUrl && (
-                  <img src={show.posterUrl} alt="" className="library-poster" />
-                )}
-                <div>
-                  <h3>{show.title}</h3>
-                  {show.overview && <p className="library-overview">{show.overview}</p>}
-                  <button
-                    type="button"
-                    disabled={addShow.isPending && addShow.variables === show.tvmazeId}
-                    onClick={() => addShow.mutate(show.tvmazeId)}
-                  >
-                    Add to library
-                  </button>
-                  {addShow.error && addShow.variables === show.tvmazeId && (
-                    <p className="library-error">{getErrorMessage(addShow.error, 'Add failed')}</p>
+                <div className="library-card__main">
+                  {show.posterUrl && (
+                    <img src={show.posterUrl} alt="" className="library-poster" />
                   )}
+                  <div>
+                    <h3>{show.title}</h3>
+                    {show.overview && <p className="library-overview">{show.overview}</p>}
+                    <button
+                      type="button"
+                      disabled={addShow.isPending && addShow.variables === show.tvmazeId}
+                      onClick={() => addShow.mutate(show.tvmazeId)}
+                    >
+                      Add to library
+                    </button>
+                    {addShow.error && addShow.variables === show.tvmazeId && (
+                      <p className="library-error">{getErrorMessage(addShow.error, 'Add failed')}</p>
+                    )}
+                  </div>
                 </div>
               </li>
             ))}

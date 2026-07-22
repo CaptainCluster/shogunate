@@ -28,10 +28,24 @@
 
 .library-card {
   display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
   gap: 1rem;
   padding: 1rem;
   border: 1px solid var(--border);
   border-radius: 8px;
+}
+
+.library-card__main {
+  display: flex;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.library-card__favorite-badge {
+  flex-shrink: 0;
+  align-self: flex-start;
 }
 
 .library-poster {

@@ -161,6 +161,15 @@ The system SHALL allow a user to remove a show from their library. Removal MUST 
 - WHEN one user removes the show
 - THEN the global catalog remains for users who still have the show in their library
 
+### Requirement: Review Cleanup on Library Removal
+When a user removes a show from their library, the system MUST delete all of that user's reviews whose targets belong to the removed show hierarchy (show, its seasons, and its episodes).
+
+#### Scenario: Reviews deleted on library removal
+- **GIVEN** a user has reviews on a show, one of its seasons, and one of its episodes
+- **WHEN** the user removes that show from their library
+- **THEN** all of that user's reviews for targets in that show hierarchy are deleted
+- **AND** reviews for the same catalog targets belonging to other users are unchanged
+
 ### Requirement: Show Detail Includes Watch State
 When a user requests show detail for a show in their library, the response SHALL include the user's current watched state and watched timestamp for the show, each season, and each episode.
 

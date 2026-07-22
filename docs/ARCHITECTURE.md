@@ -178,7 +178,7 @@ erDiagram
         numeric rating
         text body
         timestamp created_at
-        timestamp updated_at
+        timestamp updated_at "nullable; set by DB trigger on UPDATE"
     }
     WATCH_EVENTS {
         uuid id PK
@@ -205,7 +205,8 @@ erDiagram
 - `user_library` links users to catalog shows: `library_status` is `'NONE' | 'PLAN_TO_WATCH'`.
 - Current watched state lives in `user_watch_state` (per user, per catalog target) — not on catalog rows.
 - `target_type` (on `reviews`, `watch_events`, `favorites`, `user_watch_state`): `'EPISODE' | 'SEASON' | 'SHOW'`.
-- `rating` on `reviews`: `NUMERIC(2,1)`, application-validated to `{0.5, 1.0, 1.5, ..., 5.0}`.
+- `rating` on `reviews`: `NUMERIC(2,1)`, application-validated to `{1.0, 1.5, 2.0, ..., 5.0}` (0.5 increments).
+- `reviews.updated_at` is nullable on insert; a Postgres `BEFORE UPDATE` trigger sets it to `NOW()` — the application never assigns `updated_at`.
 - `watch_events.action`: `'WATCHED' | 'UNWATCHED'`.
 - `watch_events` is **append-only** during normal watch operations.
 - Unique constraints: `user_library(user_id, show_id)`, `reviews(user_id, target_type, target_id)`, `favorites(user_id, target_type, target_id)`.

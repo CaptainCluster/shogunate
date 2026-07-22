@@ -44,6 +44,14 @@ class OpenApiIntegrationTest {
                 .andExpect(jsonPath("$.paths['/api/watch/shows/{id}'].post.summary")
                         .value("Mark a show and all seasons and episodes as watched"))
                 .andExpect(jsonPath("$.paths['/api/watch/shows/{id}'].delete.summary")
-                        .value("Unmark a show and all seasons and episodes as watched"));
+                        .value("Unmark a show and all seasons and episodes as watched"))
+                .andExpect(jsonPath("$.paths['/api/reviews'].post.summary")
+                        .value("Create a review for an episode, season, or show"))
+                .andExpect(jsonPath("$.paths['/api/reviews'].get.summary")
+                        .value("Get the authenticated user's review for a target"))
+                .andExpect(jsonPath("$.paths['/api/reviews/{id}'].put.summary")
+                        .value("Update the authenticated user's review"))
+                .andExpect(jsonPath("$.paths['/api/reviews/{id}'].delete.summary")
+                        .value("Delete the authenticated user's review"));
     }
 }

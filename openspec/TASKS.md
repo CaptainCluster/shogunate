@@ -8,7 +8,7 @@ Companion to `docs/PRD.md` and `docs/ARCHITECTURE.md`. Tasks are grouped into ph
 
 Checkboxes track phase-level progress. When an OpenSpec change completes and is archived, check off the corresponding phase task(s) here in the same commit.
 
-**Completed changes (archived):** `foundation-setup`, `frontend-tanstack-auth`, `username-auth`, `tvmaze-api`, `shared-show-catalog`.
+**Completed changes (archived):** `foundation-setup`, `frontend-tanstack-auth`, `username-auth`, `tvmaze-api`, `shared-show-catalog`, `reviews-ratings-backend`.
 
 ---
 
@@ -160,20 +160,21 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ## Phase 4: Reviews & Ratings
 
-- [ ] **4.1 —** `reviews` **table (migration)**
+- [x] **4.1 —** `reviews` **table (migration)**
   Unique on `(user_id, target_type, target_id)`; targets reference shared catalog entities.
   *Ref: Architecture §3*
 
-- [ ] **4.2 — Review CRUD (backend)**
-  `POST`/`PUT`/`DELETE /api/reviews`, `GET /api/reviews?targetType=&targetId=`. Rating validated to 0.5-step increments in `[0.5, 5.0]`.
+- [x] **4.2 — Review CRUD (backend)**
+  `POST`/`PUT`/`DELETE /api/reviews`, `GET /api/reviews?targetType=&targetId=`. Rating validated to 0.5-step increments in `[1.0, 5.0]`.
   *Acceptance:* Reviews at episode/season/show level are stored and retrieved independently, with no roll-up logic between levels. A user cannot fetch or modify another user's review.
   *Ref: PRD §5.4*
 
 - [ ] **4.3 — Review UI (frontend)**
-  Star-rating input (half-star precision) + text field, attachable to episode/season/show detail views.
+  Star-rating input (half-star precision) + text field, attachable to episode/season/show detail views. Remove-from-library on show detail and library list MUST prompt for confirmation (via existing `useConfirm`) warning that reviews, watch history, and watch state for the show will be permanently deleted.
+  *Acceptance:* Remove without confirming sends no API request; confirming proceeds with deletion; cancel leaves the show in the library.
   *Ref: PRD §5.4; Architecture §7.1*
 
-- [ ] **4.4 — Tests**
+- [x] **4.4 — Tests**
   Unit tests for rating validation. Integration tests for CRUD + cross-user access rejection.
   *Ref: Architecture §8.3*
 

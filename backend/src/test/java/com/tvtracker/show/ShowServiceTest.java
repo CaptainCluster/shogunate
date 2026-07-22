@@ -14,6 +14,7 @@ import com.tvtracker.common.TargetType;
 import com.tvtracker.common.exception.ConflictException;
 import com.tvtracker.common.exception.NotFoundException;
 import com.tvtracker.common.exception.ValidationException;
+import com.tvtracker.review.ReviewRepository;
 import com.tvtracker.show.dto.ShowDetailResponse;
 import com.tvtracker.show.tvmaze.TvmazeClient;
 import com.tvtracker.watch.UserWatchState;
@@ -54,6 +55,9 @@ class ShowServiceTest {
 
     @Mock
     private WatchEventRepository watchEventRepository;
+
+    @Mock
+    private ReviewRepository reviewRepository;
 
     @InjectMocks
     private ShowService showService;
@@ -223,6 +227,7 @@ class ShowServiceTest {
         verify(userWatchStateRepository)
                 .deleteByUserIdAndTargetIdIn(eq(userId), eq(Set.of(showId, seasonId, episodeId)));
         verify(watchEventRepository).deleteByUserIdAndTargetIdIn(eq(userId), eq(Set.of(showId, seasonId, episodeId)));
+        verify(reviewRepository).deleteByUserIdAndTargetIdIn(eq(userId), eq(Set.of(showId, seasonId, episodeId)));
         verify(userLibraryRepository).delete(entry);
         verify(episodeRepository).deleteBySeasonIdIn(List.of(seasonId));
         verify(seasonRepository).deleteByShowId(showId);

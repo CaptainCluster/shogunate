@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as showApi from '../../../api/showApi'
+import { invalidateAllFavoriteQueries } from '../../favorites/hooks/useFavoriteMutations'
 import { showKeys } from '../showKeys'
 
 export function useShowLibrary() {
@@ -53,6 +54,7 @@ export function useRemoveShow() {
     mutationFn: (showId: string) => showApi.removeShow(showId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: showKeys.library() })
+      invalidateAllFavoriteQueries(queryClient)
     },
   })
 }

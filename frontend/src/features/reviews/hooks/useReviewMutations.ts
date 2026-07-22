@@ -6,12 +6,16 @@ import type {
   UpdateReviewPayload,
 } from '../../../api/reviewApi'
 import * as reviewApi from '../../../api/reviewApi'
+import { invalidateAllFavoriteQueries } from '../../favorites/hooks/useFavoriteMutations'
 import { reviewKeys } from '../reviewKeys'
 
 function invalidateReview(queryClient: ReturnType<typeof useQueryClient>, review: Review) {
-  return queryClient.invalidateQueries({
-    queryKey: reviewKeys.target(review.targetType, review.targetId),
-  })
+  return Promise.all([
+    queryClient.invalidateQueries({
+      queryKey: reviewKeys.target(review.targetType, review.targetId),
+    }),
+    invalidateAllFavoriteQueries(queryClient),
+  ])
 }
 
 export function useReviewMutations(targetType: ReviewTargetType, targetId: string) {
@@ -32,7 +36,10 @@ export function useReviewMutations(targetType: ReviewTargetType, targetId: strin
   const deleteReview = useMutation({
     mutationFn: (id: string) => reviewApi.deleteReview(id),
     onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: reviewKeys.target(targetType, targetId) }),
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: reviewKeys.target(targetType, targetId) }),
+        invalidateAllFavoriteQueries(queryClient),
+      ]),
   })
 
   const error = createReview.error ?? updateReview.error ?? deleteReview.error

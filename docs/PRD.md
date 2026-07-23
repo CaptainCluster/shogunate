@@ -54,7 +54,9 @@ Single user type: an **authenticated individual user**. Every user has their own
 - Each **episode** has a watched state: `Unwatched` or `Watched`, with a `watchedAt` timestamp set when marked watched.
 - Each **season** and **show** also carry their own watched state, settable directly with one click.
 - **Cascading down (marking watched):** Marking a season watched marks all its episodes watched, using the same timestamp. Marking a show watched marks all its seasons and episodes watched, using the same timestamp.
+- **Cascading up (marking watched):** When every episode in a season is watched (including by marking episodes individually), the season is automatically marked watched with `watchedAt` equal to the most recently watched episode's timestamp. When every episode in a show is watched, the show is automatically marked watched the same way.
 - **Cascading down (unmarking watched):** Unmarking a season or show as watched also unmarks all of its episodes. This action requires **user confirmation** before proceeding, since it is destructive to fine-grained state.
+- **Cascading up (unmarking watched):** Unmarking an episode automatically clears season and show watched state when the hierarchy is no longer fully watched.
 - **No rewatch tracking:** each episode/season/show has exactly one current watched state and one current `watchedAt` timestamp at any time (i.e., re-marking as watched simply updates the timestamp — no separate watch instances are stored as "current state").
 - **Full audit history is retained regardless:** every watch/unwatch action (including cascade-triggered ones) is recorded as an immutable event log entry with: user, target (episode/season/show), action type, timestamp, and whether it was cascade-triggered or direct. This log is what powers time-based analytics, independent of current state.
 

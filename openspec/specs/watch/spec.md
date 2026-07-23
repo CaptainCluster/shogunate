@@ -14,6 +14,28 @@ The system SHALL allow a user to mark a single episode as watched, recording the
 - THEN the episode's watched state becomes true
 - AND a watched timestamp is recorded
 
+### Requirement: Mark Episode Watched Cascades Up
+When all episodes in a season are watched, the system SHALL automatically mark that season as watched. When all episodes in a show are watched, the system SHALL automatically mark that show as watched. The parent `watchedAt` MUST equal the latest `watchedAt` among watched episodes in the completed scope (the most recently watched episode).
+
+#### Scenario: Final episode marks season and show watched
+- GIVEN a season with two episodes where the first is already watched
+- WHEN the user marks the second episode watched
+- THEN the season becomes watched
+- AND the show becomes watched
+- AND both parent `watchedAt` values equal the second episode's `watchedAt`
+
+#### Scenario: Incomplete season does not promote parent
+- GIVEN a season with two episodes where only one is watched
+- WHEN the user marks that one episode watched
+- THEN the season remains unwatched
+- AND the show remains unwatched
+
+#### Scenario: Single-episode season promotes on episode mark
+- GIVEN a season with exactly one episode
+- WHEN the user marks that episode watched
+- THEN the season becomes watched with the episode's `watchedAt`
+- AND the show becomes watched with the same `watchedAt`
+
 ### Requirement: Mark Season or Show Watched Cascades Down
 Marking a season or show as watched SHALL mark all of its unwatched descendant episodes (and seasons, for a show) as watched, using the same timestamp as the top-level action. Already-watched descendants MUST retain their existing watched timestamp.
 
@@ -42,6 +64,22 @@ The system SHALL allow a user to unmark any watched episode, season, or show. Un
 - GIVEN a watched season with watched episodes
 - WHEN the user requests to unmark it with confirmation provided
 - THEN the season and all of its episodes become unwatched
+
+### Requirement: Unmark Episode Cascades Up
+When an episode is unmarked and the season or show is no longer fully watched (not every episode in scope is watched), the system SHALL automatically clear watched state on affected parent season and show rows.
+
+#### Scenario: Unmarking one episode clears season and show
+- GIVEN a fully watched show where every episode, season, and the show are marked watched
+- WHEN the user unmarks one episode
+- THEN that episode becomes unwatched
+- AND the containing season becomes unwatched
+- AND the show becomes unwatched
+
+#### Scenario: Unmarking episode in incomplete season leaves siblings unchanged
+- GIVEN a season where one of two episodes is watched and neither parent is watched
+- WHEN the user unmarks the watched episode
+- THEN both episodes are unwatched
+- AND the season and show remain unwatched
 
 ### Requirement: No Rewatch Tracking
 The system SHALL maintain exactly one current watched state and one current watched timestamp per episode, season, and show. Re-marking an already-watched target directly (not via a parent cascade) updates its existing timestamp rather than creating a distinct watch instance.
@@ -103,7 +141,7 @@ The system MUST reject watch and unwatch operations when the target's containing
 - AND no data belonging to the other user is modified
 
 ### Requirement: Cascade Event Tagging
-When a mark or unmark operation cascades to descendant targets, each resulting history log entry MUST record whether it was cascade-triggered and MUST reference the top-level event that initiated the cascade.
+When a mark or unmark operation cascades to other targets — whether downward to descendants or upward to ancestors — each resulting history log entry MUST record whether it was cascade-triggered and MUST reference the top-level event that initiated the cascade.
 
 #### Scenario: Show mark tags descendant events
 - GIVEN a user marks a show watched and the cascade affects seasons and episodes
@@ -111,6 +149,20 @@ When a mark or unmark operation cascades to descendant targets, each resulting h
 - THEN a history log entry exists for the show with cascade-triggered set to false
 - AND each season and episode entry has cascade-triggered set to true
 - AND each descendant entry references the show-level event as its cascade source
+
+#### Scenario: Episode mark tags upward promotion events
+- GIVEN a user marks the final unwatched episode in a season
+- WHEN the upward cascade promotes the season and show
+- THEN a history log entry exists for the episode with cascade-triggered set to false
+- AND season and show promotion entries have cascade-triggered set to true
+- AND each promotion entry references the episode-level event as its cascade source
+
+#### Scenario: Episode unmark tags upward demotion events
+- GIVEN a fully watched show
+- WHEN the user unmarks one episode
+- THEN a history log entry exists for the episode unmark with cascade-triggered set to false
+- AND season and show demotion entries have cascade-triggered set to true
+- AND each demotion entry references the episode-level event as its cascade source
 
 ### Requirement: Watch Controls on Show Detail
 The frontend SHALL provide separate mark-watched and unmark actions at the episode, season, and show level on the show detail page for shows in the authenticated user's library.

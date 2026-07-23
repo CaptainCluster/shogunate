@@ -65,7 +65,8 @@ backend/
     │
     ├── watch/
     │   ├── WatchController.java
-    │   ├── WatchService.java           (owns cascade logic)
+    │   ├── WatchService.java           (orchestrates mark/unmark + downward cascade)
+    │   ├── WatchHierarchySyncService.java  (upward cascade to season/show)
     │   ├── WatchEventRepository.java
     │   ├── WatchEvent.java             (entity — immutable log)
     │   └── dto/
@@ -248,32 +249,39 @@ sequenceDiagram
 
 ## 5. Watch Cascade Logic
 
-Owned entirely by `WatchService`. Two operations, both wrapped in a single DB transaction:
+Owned by `WatchService` (downward cascade) and `WatchHierarchySyncService` (upward cascade). Both operations run inside a single DB transaction on `WatchService.markWatched` / `unmarkWatched`.
 
 **Mark watched (episode/season/show):**
 1. Upsert `user_watch_state` with `watched = true`, `watched_at = now()` for the target (and descendants for season/show).
-2. If target is a season or show, recursively apply the same to all children in `user_watch_state`, using the *same* timestamp.
-3. Write one `watch_events` row per affected row (`action = WATCHED`), marking child rows as `triggered_by_cascade = true` with `cascade_source_id` pointing to the top-level event.
+2. If target is a season or show, apply the same to all unwatched children in `user_watch_state`, using the *same* timestamp. Already-watched descendants keep their existing timestamp.
+3. Write one `watch_events` row per directly affected target (`action = WATCHED`), marking descendant rows as `triggered_by_cascade = true` with `cascade_source_id` pointing to the top-level event.
+4. **`WatchHierarchySyncService` (upward):** For each season where every episode is watched, upsert the season row with `watched_at = max(episode.watched_at)`. If every episode in the show is watched, upsert the show row the same way. Write cascade-tagged `watch_events` for each newly promoted parent.
+5. **`LibraryStatusSyncService`:** If all episodes are watched, set `user_library.library_status = WATCHED`; otherwise revert from `WATCHED` to `NONE`.
 
 **Unmark watched (episode/season/show):**
 1. Frontend must send an explicit confirmation flag for season/show-level unmark requests (backend rejects without it — see 8.1).
 2. Set `watched = false` in `user_watch_state` for the target and, for season/show, all descendants.
-3. Write corresponding `watch_events` rows (`action = UNWATCHED`) for every affected row, same cascade-tagging rule as above.
+3. Write corresponding `watch_events` rows (`action = UNWATCHED`) for every directly affected row, same cascade-tagging rule as above.
+4. **`WatchHierarchySyncService` (upward):** Clear season/show rows that are watched but no longer have every episode watched. Write cascade-tagged `watch_events` for each demoted parent.
+5. **`LibraryStatusSyncService`:** Revert library status if the show is no longer fully watched.
 
 ```mermaid
 sequenceDiagram
     participant FE as Frontend
     participant WS as WatchService
+    participant HS as WatchHierarchySyncService
     participant DB as PostgreSQL
 
-    FE->>WS: DELETE /api/watch/shows/{id} (confirm=true)
+    FE->>WS: POST /api/watch/episodes/{id}
     WS->>DB: BEGIN TRANSACTION
-    WS->>DB: UPDATE show SET watched=false
-    WS->>DB: UPDATE seasons SET watched=false WHERE show_id=...
-    WS->>DB: UPDATE episodes SET watched=false WHERE season_id IN (...)
-    WS->>DB: INSERT watch_events (one row per affected show/season/episode)
+    WS->>DB: UPSERT episode user_watch_state (watched=true)
+    WS->>DB: INSERT watch_events (episode, cascade=false)
+    WS->>HS: sync upward if season/show complete
+    HS->>DB: UPSERT season/show user_watch_state (max episode timestamp)
+    HS->>DB: INSERT watch_events (parents, cascade=true)
+    WS->>DB: sync library status
     WS->>DB: COMMIT
-    WS-->>FE: 200 OK
+    WS-->>FE: 204 No Content
 ```
 
 The entire cascade is one atomic transaction (per PRD §8.3) — a partial cascade is never left in the database.

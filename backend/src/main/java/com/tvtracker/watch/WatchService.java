@@ -30,6 +30,7 @@ public class WatchService {
     private final UserLibraryRepository userLibraryRepository;
     private final UserWatchStateRepository userWatchStateRepository;
     private final WatchEventRepository watchEventRepository;
+    private final WatchHierarchySyncService watchHierarchySyncService;
     private final LibraryStatusSyncService libraryStatusSyncService;
 
     @Transactional
@@ -54,7 +55,8 @@ public class WatchService {
             changedTargets.add(target);
         }
 
-        appendWatchEvents(userId, changedTargets, WatchAction.WATCHED, now);
+        UUID topEventId = appendWatchEvents(userId, changedTargets, WatchAction.WATCHED, now);
+        watchHierarchySyncService.syncAfterWatchChange(userId, showId, topEventId, now, WatchAction.WATCHED);
         libraryStatusSyncService.syncAfterWatchChange(userId, showId);
     }
 
@@ -74,7 +76,8 @@ public class WatchService {
             upsertWatchState(userId, target, false, null);
         }
 
-        appendWatchEvents(userId, targets, WatchAction.UNWATCHED, now);
+        UUID topEventId = appendWatchEvents(userId, targets, WatchAction.UNWATCHED, now);
+        watchHierarchySyncService.syncAfterWatchChange(userId, showId, topEventId, now, WatchAction.UNWATCHED);
         libraryStatusSyncService.syncAfterWatchChange(userId, showId);
     }
 
@@ -103,9 +106,9 @@ public class WatchService {
         userWatchStateRepository.save(state);
     }
 
-    private void appendWatchEvents(UUID userId, List<WatchTarget> targets, WatchAction action, Instant occurredAt) {
+    private UUID appendWatchEvents(UUID userId, List<WatchTarget> targets, WatchAction action, Instant occurredAt) {
         if (targets.isEmpty()) {
-            return;
+            return null;
         }
 
         WatchTarget top = targets.getFirst();
@@ -134,6 +137,8 @@ public class WatchService {
                     .cascadeSourceId(topEvent.getId())
                     .build());
         }
+
+        return topEvent.getId();
     }
 
     private UUID resolveShowId(TargetType targetType, UUID targetId) {

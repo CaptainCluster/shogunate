@@ -150,7 +150,80 @@ class WatchIntegrationTest {
 
         mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.libraryStatus").value("WATCHED"));
+                .andExpect(jsonPath("$.libraryStatus").value("WATCHED"))
+                .andExpect(jsonPath("$.watched").value(true))
+                .andExpect(jsonPath("$.seasons[0].watched").value(true));
+    }
+
+    @Test
+    void markAllEpisodesIndividuallyUsesLatestEpisodeTimestampForSeasonAndShow() throws Exception {
+        String token = registerAndLogin("watch_user_episode_ts");
+        ShowIds ids = addShowAndExtractIds(token, 208);
+        String showId = ids.showId();
+
+        var showDetail = objectMapper.readTree(
+                mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString());
+        String firstEpisodeId = showDetail
+                .get("seasons")
+                .get(0)
+                .get("episodes")
+                .get(0)
+                .get("id")
+                .asText();
+        String secondEpisodeId = showDetail
+                .get("seasons")
+                .get(0)
+                .get("episodes")
+                .get(1)
+                .get("id")
+                .asText();
+
+        mockMvc.perform(post("/api/watch/episodes/" + firstEpisodeId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        var afterFirstEpisode = objectMapper.readTree(
+                mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString());
+        String firstEpisodeWatchedAt = afterFirstEpisode
+                .get("seasons")
+                .get(0)
+                .get("episodes")
+                .get(0)
+                .get("watchedAt")
+                .asText();
+
+        mockMvc.perform(post("/api/watch/episodes/" + secondEpisodeId).header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+
+        var afterSecondEpisode = objectMapper.readTree(
+                mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString());
+        String secondEpisodeWatchedAt = afterSecondEpisode
+                .get("seasons")
+                .get(0)
+                .get("episodes")
+                .get(1)
+                .get("watchedAt")
+                .asText();
+
+        org.junit.jupiter.api.Assertions.assertEquals(
+                secondEpisodeWatchedAt,
+                afterSecondEpisode.get("seasons").get(0).get("watchedAt").asText());
+        org.junit.jupiter.api.Assertions.assertEquals(
+                secondEpisodeWatchedAt, afterSecondEpisode.get("watchedAt").asText());
+        org.junit.jupiter.api.Assertions.assertNotEquals(
+                firstEpisodeWatchedAt,
+                afterSecondEpisode.get("seasons").get(0).get("watchedAt").asText());
     }
 
     @Test
@@ -178,7 +251,9 @@ class WatchIntegrationTest {
 
         mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.libraryStatus").value("NONE"));
+                .andExpect(jsonPath("$.libraryStatus").value("NONE"))
+                .andExpect(jsonPath("$.watched").value(false))
+                .andExpect(jsonPath("$.seasons[0].watched").value(false));
     }
 
     @Test

@@ -53,6 +53,9 @@ class WatchServiceTest {
     @Mock
     private LibraryStatusSyncService libraryStatusSyncService;
 
+    @Mock
+    private WatchHierarchySyncService watchHierarchySyncService;
+
     @InjectMocks
     private WatchService watchService;
 

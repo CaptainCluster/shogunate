@@ -250,8 +250,8 @@ class ShowIntegrationTest {
         mockMvc.perform(post("/api/watch/episodes/" + episodeId).header("Authorization", "Bearer " + token))
                 .andExpect(status().isNoContent());
 
-        org.junit.jupiter.api.Assertions.assertEquals(1, watchEventRepository.count());
-        org.junit.jupiter.api.Assertions.assertEquals(1, userWatchStateRepository.count());
+        org.junit.jupiter.api.Assertions.assertEquals(3, watchEventRepository.count());
+        org.junit.jupiter.api.Assertions.assertEquals(3, userWatchStateRepository.count());
 
         mockMvc.perform(delete("/api/shows/" + showId).header("Authorization", "Bearer " + token))
                 .andExpect(status().isNoContent());

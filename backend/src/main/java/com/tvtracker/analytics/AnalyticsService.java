@@ -164,11 +164,11 @@ public class AnalyticsService {
 
     private StreakSummary computeLongestStreak(List<LocalDate> dates) {
         long longestDays = 1;
-        LocalDate longestStart = dates.get(0);
-        LocalDate longestEnd = dates.get(0);
+        LocalDate longestStart = dates.getFirst();
+        LocalDate longestEnd = dates.getFirst();
 
         long currentDays = 1;
-        LocalDate currentStart = dates.get(0);
+        LocalDate currentStart = dates.getFirst();
 
         for (int i = 1; i < dates.size(); i++) {
             if (dates.get(i - 1).plusDays(1).equals(dates.get(i))) {
@@ -187,7 +187,7 @@ public class AnalyticsService {
         if (currentDays > longestDays) {
             longestDays = currentDays;
             longestStart = currentStart;
-            longestEnd = dates.get(dates.size() - 1);
+            longestEnd = dates.getLast();
         }
 
         return new StreakSummary(longestDays, longestStart, longestEnd);
@@ -196,7 +196,7 @@ public class AnalyticsService {
     private StreakSummary computeCurrentStreak(List<LocalDate> dates) {
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
         LocalDate yesterday = today.minusDays(1);
-        LocalDate mostRecent = dates.get(dates.size() - 1);
+        LocalDate mostRecent = dates.getLast();
 
         if (!mostRecent.equals(today) && !mostRecent.equals(yesterday)) {
             return new StreakSummary(0, null, null);

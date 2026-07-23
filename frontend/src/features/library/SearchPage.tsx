@@ -22,10 +22,13 @@ export function SearchPage() {
 
   return (
     <div className="library-page">
+      <nav className="library-back-nav">
+        <Link to="/library" className="library-back-link">
+          {t('backToLibrary')}
+        </Link>
+      </nav>
+
       <h1>{t('search.title')}</h1>
-      <p>
-        <Link to="/library">{t('backToLibrary')}</Link>
-      </p>
 
       <form className="library-search" onSubmit={handleSearch}>
         <input

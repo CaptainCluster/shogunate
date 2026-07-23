@@ -49,9 +49,11 @@ export function ShowDetailPage() {
 
   return (
     <div className="library-page">
-      <p>
-        <Link to="/library">{t('backToLibrary')}</Link>
-      </p>
+      <nav className="library-back-nav">
+        <Link to="/library" className="library-back-link">
+          {t('backToLibrary')}
+        </Link>
+      </nav>
 
       <div className="library-detail-hero">
         {data.posterUrl && (

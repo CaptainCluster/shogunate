@@ -271,8 +271,23 @@ class AnalyticsIntegrationTest {
         String tokenB = registerAndLogin("analytics_user_b");
         String showId = addShow(tokenA, 608);
 
+        mockMvc.perform(patch("/api/shows/" + showId)
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"libraryStatus\":\"PLAN_TO_WATCH\"}"))
+                .andExpect(status().isOk());
+
         mockMvc.perform(post("/api/watch/shows/" + showId).header("Authorization", "Bearer " + tokenA))
                 .andExpect(status().isNoContent());
+
+        mockMvc.perform(post("/api/favorites")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddFavoriteRequest(UUID.fromString(showId)))))
+                .andExpect(status().isCreated());
+
+        YearMonth currentMonth = YearMonth.now();
+        LocalDate from = currentMonth.atDay(1);
 
         mockMvc.perform(get("/api/analytics/totals").header("Authorization", "Bearer " + tokenA))
                 .andExpect(status().isOk())
@@ -281,6 +296,34 @@ class AnalyticsIntegrationTest {
         mockMvc.perform(get("/api/analytics/totals").header("Authorization", "Bearer " + tokenB))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.counts.episodes").value(0));
+
+        mockMvc.perform(get("/api/analytics/longest-to-watch").header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+
+        mockMvc.perform(get("/api/analytics/watch-counts")
+                        .param("period", "MONTH")
+                        .param("from", from.toString())
+                        .header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.counts.episodes").value(0));
+
+        mockMvc.perform(get("/api/analytics/favorites").header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+
+        mockMvc.perform(get("/api/analytics/watch-streaks").header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.currentStreakDays").value(0))
+                .andExpect(jsonPath("$.longestStreakDays").value(0));
+
+        mockMvc.perform(get("/api/analytics/library-completion").header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.watchedEpisodes").value(0));
+
+        mockMvc.perform(get("/api/analytics/plan-to-watch-count").header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.count").value(0));
     }
 
     private String addShow(String token, int tvmazeId) throws Exception {

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -16,6 +17,7 @@ import com.tvtracker.auth.dto.RegisterRequest;
 import com.tvtracker.favorite.FavoriteRepository;
 import com.tvtracker.review.ReviewRepository;
 import com.tvtracker.show.dto.AddShowRequest;
+import com.tvtracker.show.dto.UpdateLibraryStatusRequest;
 import com.tvtracker.show.tvmaze.TvmazeClient;
 import com.tvtracker.show.tvmaze.TvmazeEpisodeDto;
 import com.tvtracker.show.tvmaze.TvmazeImage;
@@ -334,6 +336,81 @@ class ShowIntegrationTest {
                 .andExpect(status().isNoContent());
 
         org.junit.jupiter.api.Assertions.assertEquals(0, favoriteRepository.count());
+    }
+
+    @Test
+    void crossUserCannotAccessAnotherUsersLibraryShow() throws Exception {
+        String ownerToken = registerAndLogin("show_isolation_owner");
+        String otherToken = registerAndLogin("show_isolation_other");
+
+        MvcResult addResult = mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(901))))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String showId = objectMapper
+                .readTree(addResult.getResponse().getContentAsString())
+                .get("id")
+                .asText();
+
+        mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(patch("/api/shows/" + showId)
+                        .header("Authorization", "Bearer " + otherToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new UpdateLibraryStatusRequest(LibraryStatus.PLAN_TO_WATCH))))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(delete("/api/shows/" + showId).header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(get("/api/shows").header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+
+        mockMvc.perform(get("/api/shows").header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void crossUserWatchStateIsIsolatedOnSharedShow() throws Exception {
+        String ownerToken = registerAndLogin("show_watch_owner");
+        String otherToken = registerAndLogin("show_watch_other");
+        int tvmazeId = 902;
+
+        MvcResult addResult = mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + ownerToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        String showId = objectMapper
+                .readTree(addResult.getResponse().getContentAsString())
+                .get("id")
+                .asText();
+
+        mockMvc.perform(post("/api/shows")
+                        .header("Authorization", "Bearer " + otherToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new AddShowRequest(tvmazeId))))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/watch/shows/" + showId).header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + ownerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.watched").value(true));
+
+        mockMvc.perform(get("/api/shows/" + showId).header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.watched").value(false));
     }
 
     private String registerAndLogin(String username) throws Exception {

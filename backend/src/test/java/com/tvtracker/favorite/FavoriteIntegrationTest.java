@@ -200,6 +200,49 @@ class FavoriteIntegrationTest {
     }
 
     @Test
+    void crossUserFavoriteStatusAndSuggestionsAreIsolated() throws Exception {
+        String tokenA = registerAndLogin("fav_status_a");
+        String tokenB = registerAndLogin("fav_status_b");
+        String showIdA = addShow(tokenA, 507);
+        String showIdB = addShow(tokenB, 508);
+
+        mockMvc.perform(post("/api/favorites")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new AddFavoriteRequest(java.util.UUID.fromString(showIdA)))))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/reviews")
+                        .header("Authorization", "Bearer " + tokenA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+                                {"targetType":"SHOW","targetId":"%s","rating":5.0}
+                                """
+                                        .formatted(showIdA)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get("/api/favorites/status")
+                        .param("showId", showIdA)
+                        .header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/favorites/suggestions").header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
+
+        mockMvc.perform(get("/api/favorites/status")
+                        .param("showId", showIdB)
+                        .header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isFavorite").value(false));
+
+        mockMvc.perform(delete("/api/favorites/" + showIdA).header("Authorization", "Bearer " + tokenB))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     void removeFavoriteReturns204() throws Exception {
         String token = registerAndLogin("fav_remove");
         String showId = addShow(token, 506);

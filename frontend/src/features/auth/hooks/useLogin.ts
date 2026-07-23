@@ -9,8 +9,9 @@ export function useLogin() {
     mutationFn: ({ username, password }: { username: string; password: string }) =>
       login(username, password),
     onSuccess: (data) => {
+      queryClient.clear()
       setAuthToken(data.token)
-      queryClient.invalidateQueries({ queryKey: authKeys.me() })
+      void queryClient.invalidateQueries({ queryKey: authKeys.me() })
     },
   })
 }

@@ -63,6 +63,8 @@ class AuthIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username").value("integration_user"));
 
-        mockMvc.perform(get("/api/me")).andExpect(status().isForbidden());
+        mockMvc.perform(get("/api/me"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.status").value(401));
     }
 }

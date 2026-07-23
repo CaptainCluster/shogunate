@@ -233,19 +233,19 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ## Phase 7: Cross-Cutting Polish
 
-- [ ] **7.1 — Security review**
+- [x] **7.1 — Security review**
   Confirm every endpoint scopes queries by the authenticated user (no ID accepted from client input is trusted without an ownership check); confirm password hashes and JWT secret are never logged.
   *Ref: Architecture §8.1*
 
-- [ ] **7.2 — Data-isolation audit**
+- [x] **7.2 — Data-isolation audit**
   Verify no query anywhere can leak one user's library entries, reviews, watch-events, or favorites to another user, across every feature built above.
   *Ref: PRD §2, §4 (no cross-user visibility)*
 
-- [ ] **7.3 — OpenAPI review**
+- [x] **7.3 — OpenAPI review**
   Confirm `/swagger-ui.html` accurately reflects every implemented endpoint, with meaningful operation summaries/descriptions.
   *Ref: Architecture §2.2*
 
-- [ ] **7.4 — End-to-end smoke pass**
+- [x] **7.4 — End-to-end smoke pass**
   Manually walk the full flow: register → login → add show → mark episodes/season/show watched (and unmark with confirmation) → write reviews → flag favorite → view analytics.
   *Ref: PRD §5 (all functional requirements)*
 

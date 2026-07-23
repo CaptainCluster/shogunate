@@ -289,6 +289,19 @@ class WatchIntegrationTest {
     }
 
     @Test
+    void crossUserCannotWatchEpisodeOrSeasonNotInLibrary() throws Exception {
+        String ownerToken = registerAndLogin("watch_ep_owner");
+        String otherToken = registerAndLogin("watch_ep_other");
+        ShowIds ids = addShowAndExtractIds(ownerToken, 206);
+
+        mockMvc.perform(post("/api/watch/episodes/" + ids.episodeId()).header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(post("/api/watch/seasons/" + ids.seasonId()).header("Authorization", "Bearer " + otherToken))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void crossUserCannotWatchAnotherUsersShow() throws Exception {
         String ownerToken = registerAndLogin("watch_owner");
         String otherToken = registerAndLogin("watch_other");

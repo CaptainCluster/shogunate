@@ -1,5 +1,6 @@
 package com.tvtracker.config;
 
+import com.tvtracker.common.openapi.JsonUnauthorizedEntryPoint;
 import com.tvtracker.common.security.CurrentUserResolver;
 import com.tvtracker.common.security.JwtAuthenticationFilter;
 import java.util.List;
@@ -23,6 +24,7 @@ public class SecurityConfig implements WebMvcConfigurer {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CurrentUserResolver currentUserResolver;
+    private final JsonUnauthorizedEntryPoint jsonUnauthorizedEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -34,6 +36,7 @@ public class SecurityConfig implements WebMvcConfigurer {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jsonUnauthorizedEntryPoint))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }

@@ -28,7 +28,7 @@ export function WatchCountsSection() {
             <button
               key={option}
               type="button"
-              className={period === option ? 'analytics-period-btn analytics-period-btn--active' : 'analytics-period-btn'}
+              className={`ui-button ui-button--ghost${period === option ? ' ui-button--active' : ''}`}
               onClick={() => setPeriod(option)}
             >
               {t(PERIOD_LABEL_KEYS[option])}
@@ -38,6 +38,7 @@ export function WatchCountsSection() {
         <label className="analytics-date-field">
           {t('watchCounts.from')}
           <input
+            className="ui-input"
             type="date"
             value={from}
             onChange={(event) => setFrom(event.target.value)}
@@ -47,6 +48,7 @@ export function WatchCountsSection() {
           <label className="analytics-date-field">
             {t('watchCounts.to')}
             <input
+              className="ui-input"
               type="date"
               value={to}
               onChange={(event) => setTo(event.target.value)}

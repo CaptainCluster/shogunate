@@ -30,6 +30,7 @@ export function LoginPage() {
         <label>
           {t('login.username')}
           <input
+            className="ui-input"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -42,6 +43,7 @@ export function LoginPage() {
         <label>
           {t('login.password')}
           <input
+            className="ui-input"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -49,7 +51,7 @@ export function LoginPage() {
           />
         </label>
         {error && <p className="auth-error">{error}</p>}
-        <button type="submit" disabled={loginMutation.isPending}>
+        <button type="submit" className="ui-button ui-button--primary" disabled={loginMutation.isPending}>
           {t('login.submit')}
         </button>
       </form>

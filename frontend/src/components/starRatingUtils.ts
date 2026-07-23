@@ -18,8 +18,8 @@ export function isValidRating(rating: number | null): rating is number {
 }
 
 export function ratingFromStarClick(starIndex: number, half: 'left' | 'right'): number {
-  if (half === 'left') {
+  if (half === 'right') {
     return starIndex
   }
-  return Math.min(starIndex + 0.5, 5)
+  return Math.max(1, starIndex - 0.5)
 }

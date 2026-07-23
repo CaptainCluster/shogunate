@@ -1,24 +1,41 @@
 .language-switch {
   display: inline-flex;
-  border: 1px solid #444;
-  border-radius: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   overflow: hidden;
 }
 
 .language-switch__btn {
-  padding: 0.25rem 0.5rem;
+  padding: var(--space-1) var(--space-2);
+  min-height: 44px;
+  min-width: 44px;
   border: none;
   background: transparent;
   color: inherit;
   cursor: pointer;
   font-size: 0.875rem;
+  transition: background-color 150ms ease;
 }
 
 .language-switch__btn--active {
-  background: #444;
+  background: var(--accent-bg);
+  border-color: var(--accent-border);
   font-weight: 600;
+  color: var(--text-h);
 }
 
 .language-switch__btn:hover:not(.language-switch__btn--active) {
-  background: #333;
+  background: var(--code-bg);
+}
+
+.language-switch__btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+@media (min-width: 769px) {
+  .language-switch__btn {
+    min-height: auto;
+    min-width: auto;
+  }
 }

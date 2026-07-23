@@ -62,13 +62,13 @@ export function ConfirmDialog({
         <h2 id={titleId}>{title}</h2>
         <p id={messageId}>{message}</p>
         <div className="confirm-actions">
-          <button type="button" onClick={onCancel} disabled={isPending}>
+          <button type="button" className="ui-button ui-button--ghost" onClick={onCancel} disabled={isPending}>
             {cancelLabel ?? t('confirm.cancel')}
           </button>
           <button
             ref={confirmRef}
             type="button"
-            className="confirm-primary"
+            className="ui-button ui-button--primary"
             onClick={onConfirm}
             disabled={isPending}
           >

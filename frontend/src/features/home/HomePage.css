@@ -1,0 +1,39 @@
+.home-page {
+  text-align: left;
+  max-width: 36rem;
+}
+
+.home-page__tagline {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-8);
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.home-page__signed-in {
+  margin-bottom: var(--space-6);
+}
+
+.home-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.home-page__guest {
+  margin-top: var(--space-6);
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .home-page__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .home-page__actions .ui-button {
+    width: 100%;
+    justify-content: center;
+  }
+}

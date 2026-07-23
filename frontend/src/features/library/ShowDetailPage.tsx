@@ -53,52 +53,62 @@ export function ShowDetailPage() {
         <Link to="/library">{t('backToLibrary')}</Link>
       </p>
 
-      <div className="library-detail-header">
+      <div className="library-detail-hero">
         {data.posterUrl && (
-          <img src={data.posterUrl} alt="" className="library-detail-poster" />
+          <figure className="library-detail-poster-frame">
+            <img src={data.posterUrl} alt="" className="library-detail-poster" />
+          </figure>
         )}
-        <div>
+        <div className="library-detail-info">
           <h1>{data.title}</h1>
-          {data.firstAirDate && <p>{t('detail.premiered', { date: data.firstAirDate })}</p>}
-          {data.overview && <p>{data.overview}</p>}
+          {data.firstAirDate && (
+            <p className="library-detail-meta">{t('detail.premiered', { date: data.firstAirDate })}</p>
+          )}
+          {data.overview && <p className="library-detail-overview">{data.overview}</p>}
           {data.tvmazeUrl && (
-            <p>
+            <p className="library-detail-meta">
               <a href={data.tvmazeUrl} target="_blank" rel="noreferrer">
                 {t('detail.viewOnTvmaze')}
               </a>
             </p>
           )}
-          <div className="show-watch-controls">
-            <WatchButtonPair
-              targetType="SHOW"
-              targetId={data.id}
-              watched={data.watched}
-              watchedAt={data.watchedAt}
-              label={data.title}
-              episodeCount={totalEpisodes}
-              seasonCount={seasonCount}
-              mutations={mutationProps}
-            />
-          </div>
-          {watchMutations.error && (
-            <p className="library-error watch-error">
-              {getErrorMessage(watchMutations.error, t('detail.watchUpdateFailed'))}
-            </p>
-          )}
-          <FavoriteToggle showId={data.id} />
-          <WatchedReviewEditor
-            watched={data.watched}
-            className="show-review"
+        </div>
+      </div>
+
+      <section className="library-detail-actions" aria-label={t('detail.actionsAria')}>
+        <div className="show-watch-controls">
+          <WatchButtonPair
             targetType="SHOW"
             targetId={data.id}
-            label={t('detail.rateShow', { title: data.title })}
+            watched={data.watched}
+            watchedAt={data.watchedAt}
+            label={data.title}
+            episodeCount={totalEpisodes}
+            seasonCount={seasonCount}
+            mutations={mutationProps}
           />
-          <label htmlFor="library-status">{t('detail.libraryStatus')}</label>
+        </div>
+        {watchMutations.error && (
+          <p className="library-error watch-error">
+            {getErrorMessage(watchMutations.error, t('detail.watchUpdateFailed'))}
+          </p>
+        )}
+        <FavoriteToggle showId={data.id} />
+        <WatchedReviewEditor
+          watched={data.watched}
+          className="show-review"
+          targetType="SHOW"
+          targetId={data.id}
+          label={t('detail.rateShow', { title: data.title })}
+        />
+        <label className="library-detail-status" htmlFor="library-status">
+          {t('detail.libraryStatus')}
           {data.libraryStatus === 'WATCHED' ? (
-            <p id="library-status">{formatLibraryStatus(data.libraryStatus)}</p>
+            <span id="library-status">{formatLibraryStatus(data.libraryStatus)}</span>
           ) : (
             <select
               id="library-status"
+              className="ui-select"
               value={data.libraryStatus}
               disabled={watchMutations.isPending || updateStatus.isPending}
               onChange={(event) =>
@@ -109,15 +119,13 @@ export function ShowDetailPage() {
               <option value="PLAN_TO_WATCH">{formatLibraryStatus('PLAN_TO_WATCH')}</option>
             </select>
           )}
-          <p>
-            <RemoveFromLibraryButton
-              showId={id}
-              showTitle={data.title}
-              onSuccess={() => navigate('/library')}
-            />
-          </p>
-        </div>
-      </div>
+        </label>
+        <RemoveFromLibraryButton
+          showId={id}
+          showTitle={data.title}
+          onSuccess={() => navigate('/library')}
+        />
+      </section>
 
       <h2>{t('detail.seasons')}</h2>
       {data.seasons.map((season) => {

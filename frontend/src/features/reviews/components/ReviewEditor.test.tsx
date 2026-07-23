@@ -63,7 +63,7 @@ describe('ReviewEditor', () => {
 
     await waitFor(() => expect(view.getByRole('slider')).toBeInTheDocument())
 
-    await user.click(container.querySelectorAll('.star-rating__half--left')[3]!)
+    await user.click(container.querySelectorAll('.star-rating__half--right')[3]!)
     await waitFor(() => expect(view.getByRole('textbox')).toBeInTheDocument())
     await user.type(view.getByRole('textbox'), 'Nice')
     await user.click(view.getByRole('button', { name: 'Save review' }))

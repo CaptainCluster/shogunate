@@ -29,13 +29,14 @@ export function SearchPage() {
 
       <form className="library-search" onSubmit={handleSearch}>
         <input
+          className="ui-input"
           type="search"
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
           placeholder={t('search.placeholder')}
           aria-label={t('search.ariaLabel')}
         />
-        <button type="submit">{t('search.submit')}</button>
+        <button type="submit" className="ui-button ui-button--primary">{t('search.submit')}</button>
       </form>
 
       {activeQuery.length >= 2 && (
@@ -58,6 +59,7 @@ export function SearchPage() {
                     {show.overview && <p className="library-overview">{show.overview}</p>}
                     <button
                       type="button"
+                      className="ui-button ui-button--primary"
                       disabled={addShow.isPending && addShow.variables === show.tvmazeId}
                       onClick={() => addShow.mutate(show.tvmazeId)}
                     >

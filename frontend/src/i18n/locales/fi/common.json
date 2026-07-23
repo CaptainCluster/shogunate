@@ -9,7 +9,8 @@
     "about": "Kuvaus",
     "login": "Kirjaudu",
     "register": "Rekisteröidy",
-    "logout": "Kirjaudu ulos"
+    "logout": "Kirjaudu ulos",
+    "menuToggle": "Avaa tai sulje valikko"
   },
   "loading": "Ladataan…",
   "confirm": {

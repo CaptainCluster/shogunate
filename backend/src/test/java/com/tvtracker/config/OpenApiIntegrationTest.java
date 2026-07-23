@@ -30,9 +30,26 @@ class OpenApiIntegrationTest {
     private MockMvc mockMvc;
 
     @Test
-    void openApiDocumentsAllWatchEndpoints() throws Exception {
+    void openApiDocumentsAllEndpoints() throws Exception {
         mockMvc.perform(get("/v3/api-docs"))
                 .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.paths['/api/auth/register'].post.summary").value("Register a new user"))
+                .andExpect(
+                        jsonPath("$.paths['/api/auth/login'].post.summary").value("Log in with username and password"))
+                .andExpect(jsonPath("$.paths['/api/me'].get.summary").value("Get current authenticated user"))
+                .andExpect(jsonPath("$.paths['/api/health'].get.summary").value("Health check"))
+                .andExpect(jsonPath("$.paths['/api/demo/error'].get.summary").value("Demo structured error response"))
+                .andExpect(jsonPath("$.paths['/api/shows/search'].get.summary")
+                        .value("Search TVmaze for shows (results are not persisted)"))
+                .andExpect(jsonPath("$.paths['/api/shows'].post.summary").value("Add a show to the user's library"))
+                .andExpect(jsonPath("$.paths['/api/shows'].get.summary").value("List shows in the user's library"))
+                .andExpect(jsonPath("$.paths['/api/shows/{id}'].get.summary")
+                        .value("Get show detail with seasons and episodes"))
+                .andExpect(
+                        jsonPath("$.paths['/api/shows/{id}'].patch.summary").value("Update library status for a show"))
+                .andExpect(jsonPath("$.paths['/api/shows/{id}'].delete.summary")
+                        .value("Remove a show from the user's library"))
                 .andExpect(jsonPath("$.paths['/api/watch/episodes/{id}'].post.summary")
                         .value("Mark an episode as watched"))
                 .andExpect(jsonPath("$.paths['/api/watch/episodes/{id}'].delete.summary")
@@ -76,6 +93,10 @@ class OpenApiIntegrationTest {
                 .andExpect(jsonPath("$.paths['/api/analytics/library-completion'].get.summary")
                         .value("Get per-show and overall episode completion percentages for the library"))
                 .andExpect(jsonPath("$.paths['/api/analytics/plan-to-watch-count'].get.summary")
-                        .value("Get the count of library shows flagged as plan to watch"));
+                        .value("Get the count of library shows flagged as plan to watch"))
+                .andExpect(jsonPath("$.paths['/api/auth/register'].post.responses['201']")
+                        .exists())
+                .andExpect(jsonPath("$.paths['/api/me'].get.responses['401']").exists())
+                .andExpect(jsonPath("$.components.securitySchemes.bearerAuth").exists());
     }
 }

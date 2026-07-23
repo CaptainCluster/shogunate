@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { ShowSummary } from '../../../api/showApi'
 import { getErrorMessage } from '../../../lib/getErrorMessage'
 import { useShowLibrary } from '../../library/hooks/useShowLibrary'
@@ -11,6 +12,7 @@ interface SuggestionRowProps {
 }
 
 function SuggestionRow({ show }: SuggestionRowProps) {
+  const { t } = useTranslation('favorites')
   const mutations = useFavoriteMutations(show.id)
 
   return (
@@ -23,16 +25,17 @@ function SuggestionRow({ show }: SuggestionRowProps) {
         disabled={mutations.isPending}
         onClick={() => mutations.addFavorite.mutate()}
       >
-        Add to favorites
+        {t('addToFavorites')}
       </button>
       {mutations.error && (
-        <p className="library-error">{getErrorMessage(mutations.error, 'Add failed')}</p>
+        <p className="library-error">{getErrorMessage(mutations.error, t('addFailed'))}</p>
       )}
     </li>
   )
 }
 
 export function FavoriteSuggestionsPanel() {
+  const { t } = useTranslation('favorites')
   const suggestions = useFavoriteSuggestions()
   const library = useShowLibrary()
 
@@ -43,9 +46,9 @@ export function FavoriteSuggestionsPanel() {
   if (suggestions.error) {
     return (
       <section className="library-section favorites-panel">
-        <h2>Suggested favorites</h2>
+        <h2>{t('suggestions.title')}</h2>
         <p className="library-error">
-          {getErrorMessage(suggestions.error, 'Failed to load suggestions')}
+          {getErrorMessage(suggestions.error, t('suggestions.loadFailed'))}
         </p>
       </section>
     )
@@ -63,10 +66,8 @@ export function FavoriteSuggestionsPanel() {
 
   return (
     <section className="library-section favorites-panel">
-      <h2>Suggested favorites</h2>
-      <p className="favorites-panel__meta">
-        Based on your highest-rated show and season reviews. Add any you want to keep as favorites.
-      </p>
+      <h2>{t('suggestions.title')}</h2>
+      <p className="favorites-panel__meta">{t('suggestions.description')}</p>
       <ul className="favorites-panel__list">
         {suggestedShows.map((show) => (
           <SuggestionRow key={show.id} show={show} />

@@ -1,6 +1,6 @@
-import { render } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
+import { renderWithI18n } from '../test/renderWithI18n'
 import { StarRatingInput } from './StarRatingInput'
 
 describe('StarRatingInput', () => {
@@ -8,7 +8,7 @@ describe('StarRatingInput', () => {
     const user = userEvent.setup()
     const onChange = vi.fn()
 
-    const { container } = render(<StarRatingInput value={null} onChange={onChange} />)
+    const { container } = renderWithI18n(<StarRatingInput value={null} onChange={onChange} />)
     const leftHalves = container.querySelectorAll('.star-rating__half--left')
 
     await user.click(leftHalves[0]!)
@@ -22,7 +22,9 @@ describe('StarRatingInput', () => {
     const user = userEvent.setup()
     const onChange = vi.fn()
 
-    const { container } = render(<StarRatingInput value={2} onChange={onChange} label="Episode rating" />)
+    const { container } = renderWithI18n(
+      <StarRatingInput value={2} onChange={onChange} label="Episode rating" />,
+    )
 
     const slider = container.querySelector('[role="slider"]') as HTMLElement
     slider.focus()

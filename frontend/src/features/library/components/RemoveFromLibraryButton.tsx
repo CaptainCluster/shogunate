@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useConfirm } from '../../../hooks/useConfirm'
 import { useRemoveShow } from '../hooks/useShowLibrary'
 
@@ -14,16 +15,17 @@ export function RemoveFromLibraryButton({
   showTitle,
   disabled,
   onSuccess,
-  children = 'Remove from library',
+  children,
 }: RemoveFromLibraryButtonProps) {
+  const { t } = useTranslation('library')
   const { confirm } = useConfirm()
   const removeShow = useRemoveShow()
 
   async function handleClick() {
     const confirmed = await confirm({
-      title: 'Remove from library?',
-      message: `Remove "${showTitle}" from your library? This will permanently delete your reviews, watch history, watch state, and favorites for this show.`,
-      confirmLabel: 'Remove',
+      title: t('removeConfirm.title'),
+      message: t('removeConfirm.message', { showTitle }),
+      confirmLabel: t('removeConfirm.confirm'),
     })
 
     if (!confirmed) {
@@ -39,7 +41,7 @@ export function RemoveFromLibraryButton({
       disabled={disabled ?? removeShow.isPending}
       onClick={() => void handleClick()}
     >
-      {children}
+      {children ?? t('removeConfirm.button')}
     </button>
   )
 }

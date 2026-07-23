@@ -1,0 +1,57 @@
+{
+  "title": "Your library",
+  "inYourLibrary": "In your library",
+  "loading": "Loading library…",
+  "loadFailed": "Failed to load library",
+  "empty": "No shows yet. <link>Search for shows</link> to add one.",
+  "searchForShows": "Search for shows",
+  "statusLabel": "Status: {{status}}",
+  "remove": "Remove",
+  "favoriteBadge": "Favorite",
+  "backToLibrary": "← Back to library",
+  "search": {
+    "title": "Search TV shows",
+    "placeholder": "Search TVmaze for shows…",
+    "ariaLabel": "Search shows",
+    "submit": "Search",
+    "results": "Search results",
+    "searching": "Searching…",
+    "failed": "Search failed",
+    "noResults": "No shows found.",
+    "addToLibrary": "Add to library",
+    "addFailed": "Add failed"
+  },
+  "detail": {
+    "loading": "Loading show…",
+    "notFound": "Show not found",
+    "premiered": "Premiered: {{date}}",
+    "viewOnTvmaze": "View on TVmaze",
+    "libraryStatus": "Library status",
+    "seasons": "Seasons",
+    "seasonNumber": "Season {{number}}",
+    "untitled": "Untitled",
+    "rateShow": "Rate {{title}}",
+    "rateSeason": "Rate {{title}}",
+    "rateEpisode": "Rate episode {{number}}",
+    "episodeLabel": "Episode {{number}}",
+    "watchUpdateFailed": "Watch update failed"
+  },
+  "about": {
+    "title": "About & credits",
+    "tvmazeIntro": "Show metadata and images are provided by <tvmaze>TVmaze</tvmaze> via their public API.",
+    "license": "TVmaze data is licensed under <license>CC BY-SA 4.0</license>. Attribution is required when displaying TVmaze-sourced metadata.",
+    "apiDocs": "API documentation: <link>tvmaze.com/api</link>",
+    "goToLibrary": "Go to your library"
+  },
+  "status": {
+    "NONE": "None",
+    "PLAN_TO_WATCH": "Plan to Watch",
+    "WATCHED": "Watched"
+  },
+  "removeConfirm": {
+    "button": "Remove from library",
+    "title": "Remove from library?",
+    "message": "Remove \"{{showTitle}}\" from your library? This will permanently delete your reviews, watch history, watch state, and favorites for this show.",
+    "confirm": "Remove"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "markWatched": "Mark watched",
+  "unmark": "Unmark",
+  "watchedAt": "Watched {{date}}",
+  "markAriaLabel": "Mark {{label}} as watched",
+  "unmarkAriaLabel": "Unmark {{label}} as watched",
+  "seasonProgress": "{{watched}}/{{total}} episodes watched",
+  "unmarkSeason": {
+    "title": "Unmark season?",
+    "message": "Unmark this season and all {{episodeCount}} episodes as unwatched?",
+    "confirm": "Unmark"
+  },
+  "unmarkShow": {
+    "title": "Unmark show?",
+    "message": "Unmark this show and all {{seasonCount}} seasons ({{episodeCount}} episodes) as unwatched?",
+    "confirm": "Unmark"
+  }
+}

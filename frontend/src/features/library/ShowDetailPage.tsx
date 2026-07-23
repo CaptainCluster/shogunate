@@ -1,4 +1,5 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getErrorMessage } from '../../lib/getErrorMessage'
 import { FavoriteToggle } from '../favorites/components/FavoriteToggle'
 import { WatchedReviewEditor } from '../reviews/components/WatchedReviewEditor'
@@ -14,6 +15,7 @@ import '../reviews/reviews.css'
 import '../favorites/favorites.css'
 
 export function ShowDetailPage() {
+  const { t } = useTranslation('library')
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const show = useShowDetail(id)
@@ -21,11 +23,11 @@ export function ShowDetailPage() {
   const watchMutations = useWatchMutations(id)
 
   if (show.isLoading) {
-    return <p>Loading show…</p>
+    return <p>{t('detail.loading')}</p>
   }
 
   if (show.error || !show.data) {
-    return <p className="library-error">{getErrorMessage(show.error, 'Show not found')}</p>
+    return <p className="library-error">{getErrorMessage(show.error, t('detail.notFound'))}</p>
   }
 
   const data = show.data
@@ -48,7 +50,7 @@ export function ShowDetailPage() {
   return (
     <div className="library-page">
       <p>
-        <Link to="/library">← Back to library</Link>
+        <Link to="/library">{t('backToLibrary')}</Link>
       </p>
 
       <div className="library-detail-header">
@@ -57,12 +59,12 @@ export function ShowDetailPage() {
         )}
         <div>
           <h1>{data.title}</h1>
-          {data.firstAirDate && <p>Premiered: {data.firstAirDate}</p>}
+          {data.firstAirDate && <p>{t('detail.premiered', { date: data.firstAirDate })}</p>}
           {data.overview && <p>{data.overview}</p>}
           {data.tvmazeUrl && (
             <p>
               <a href={data.tvmazeUrl} target="_blank" rel="noreferrer">
-                View on TVmaze
+                {t('detail.viewOnTvmaze')}
               </a>
             </p>
           )}
@@ -80,7 +82,7 @@ export function ShowDetailPage() {
           </div>
           {watchMutations.error && (
             <p className="library-error watch-error">
-              {getErrorMessage(watchMutations.error, 'Watch update failed')}
+              {getErrorMessage(watchMutations.error, t('detail.watchUpdateFailed'))}
             </p>
           )}
           <FavoriteToggle showId={data.id} />
@@ -89,9 +91,9 @@ export function ShowDetailPage() {
             className="show-review"
             targetType="SHOW"
             targetId={data.id}
-            label={`Rate ${data.title}`}
+            label={t('detail.rateShow', { title: data.title })}
           />
-          <label htmlFor="library-status">Library status</label>
+          <label htmlFor="library-status">{t('detail.libraryStatus')}</label>
           {data.libraryStatus === 'WATCHED' ? (
             <p id="library-status">{formatLibraryStatus(data.libraryStatus)}</p>
           ) : (
@@ -103,8 +105,8 @@ export function ShowDetailPage() {
                 updateStatus.mutate(event.target.value as 'NONE' | 'PLAN_TO_WATCH')
               }
             >
-              <option value="NONE">None</option>
-              <option value="PLAN_TO_WATCH">Plan to Watch</option>
+              <option value="NONE">{formatLibraryStatus('NONE')}</option>
+              <option value="PLAN_TO_WATCH">{formatLibraryStatus('PLAN_TO_WATCH')}</option>
             </select>
           )}
           <p>
@@ -117,64 +119,68 @@ export function ShowDetailPage() {
         </div>
       </div>
 
-      <h2>Seasons</h2>
-      {data.seasons.map((season) => (
-        <section key={season.id} className="season-block">
-          <div className="season-header-row">
-            <h3>{season.name ?? `Season ${season.seasonNumber}`}</h3>
-            <SeasonProgress episodes={season.episodes} />
-            <WatchButtonPair
+      <h2>{t('detail.seasons')}</h2>
+      {data.seasons.map((season) => {
+        const seasonTitle = season.name ?? t('detail.seasonNumber', { number: season.seasonNumber })
+
+        return (
+          <section key={season.id} className="season-block">
+            <div className="season-header-row">
+              <h3>{seasonTitle}</h3>
+              <SeasonProgress episodes={season.episodes} />
+              <WatchButtonPair
+                targetType="SEASON"
+                targetId={season.id}
+                watched={season.watched}
+                watchedAt={season.watchedAt}
+                label={seasonTitle}
+                episodeCount={season.episodes.length}
+                mutations={mutationProps}
+              />
+            </div>
+            <WatchedReviewEditor
+              watched={season.watched}
+              className="season-review"
               targetType="SEASON"
               targetId={season.id}
-              watched={season.watched}
-              watchedAt={season.watchedAt}
-              label={season.name ?? `Season ${season.seasonNumber}`}
-              episodeCount={season.episodes.length}
-              mutations={mutationProps}
+              label={t('detail.rateSeason', { title: seasonTitle })}
             />
-          </div>
-          <WatchedReviewEditor
-            watched={season.watched}
-            className="season-review"
-            targetType="SEASON"
-            targetId={season.id}
-            label={`Rate ${season.name ?? `Season ${season.seasonNumber}`}`}
-          />
-          <ul>
-            {season.episodes.map((episode) => (
-              <li
-                key={episode.id}
-                className={`episode-row${episode.watched ? ' episode-row--watched' : ''}`}
-              >
-                <div className="episode-row__content">
-                  <div className="episode-title">
-                    {episode.episodeNumber}. {episode.title ?? 'Untitled'}
-                    {episode.airDate && ` (${episode.airDate})`}
+            <ul>
+              {season.episodes.map((episode) => (
+                <li
+                  key={episode.id}
+                  className={`episode-row${episode.watched ? ' episode-row--watched' : ''}`}
+                >
+                  <div className="episode-row__content">
+                    <div className="episode-title">
+                      {episode.episodeNumber}. {episode.title ?? t('detail.untitled')}
+                      {episode.airDate && ` (${episode.airDate})`}
+                    </div>
+                    <WatchedReviewEditor
+                      watched={episode.watched}
+                      compact
+                      collapseExistingReview
+                      targetType="EPISODE"
+                      targetId={episode.id}
+                      label={t('detail.rateEpisode', { number: episode.episodeNumber })}
+                    />
                   </div>
-                  <WatchedReviewEditor
-                    watched={episode.watched}
-                    compact
-                    collapseExistingReview
-                    targetType="EPISODE"
-                    targetId={episode.id}
-                    label={`Rate episode ${episode.episodeNumber}`}
-                  />
-                </div>
-                <div className="episode-row__watch">
-                  <WatchButtonPair
-                    targetType="EPISODE"
-                    targetId={episode.id}
-                    watched={episode.watched}
-                    watchedAt={episode.watchedAt}
-                    label={`Episode ${episode.episodeNumber}`}
-                    mutations={mutationProps}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+                  <div className="episode-row__watch">
+                    <WatchButtonPair
+                      targetType="EPISODE"
+                      targetId={episode.id}
+                      watched={episode.watched}
+                      watchedAt={episode.watchedAt}
+                      label={t('detail.episodeLabel', { number: episode.episodeNumber })}
+                      mutations={mutationProps}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      })}
     </div>
   )
 }

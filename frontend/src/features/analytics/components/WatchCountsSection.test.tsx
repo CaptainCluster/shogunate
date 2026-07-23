@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import * as analyticsApi from '../../../api/analyticsApi'
+import { renderWithI18n } from '../../../test/renderWithI18n'
 import { WatchCountsSection } from './WatchCountsSection'
 
 vi.mock('../../../api/analyticsApi', () => ({
@@ -22,7 +23,7 @@ function renderSection() {
     },
   })
 
-  return render(
+  return renderWithI18n(
     <QueryClientProvider client={queryClient}>
       <WatchCountsSection />
     </QueryClientProvider>,

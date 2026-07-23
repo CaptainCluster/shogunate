@@ -1,0 +1,74 @@
+{
+  "title": "Analytiikka",
+  "intro": "Henkilökohtaiset katselutilastosi. Kaikki päivämäärät hyödyntä UTC-aikaa.",
+  "totals": {
+    "title": "Kaikkien aikojen yhteensä",
+    "loading": "Ladataan yhteensä…",
+    "loadFailed": "Yhteensä-lataus epäonnistui",
+    "episodesWatched": "Jaksoja katsottu",
+    "seasonsWatched": "Kausia katsottu",
+    "showsWatched": "Sarjoja katsottu"
+  },
+  "watchCounts": {
+    "title": "Katselumäärät ajanjakson mukaan",
+    "periodTypeAria": "Ajanjakson tyyppi",
+    "month": "Kuukausi",
+    "year": "Vuosi",
+    "custom": "Mukautettu",
+    "from": "Alkaen",
+    "to": "Päättyen",
+    "loading": "Ladataan katselumääriä…",
+    "loadFailed": "Katselumäärien lataus epäonnistui",
+    "periodMeta": "Ajanjakso: {{period}} · {{from}} – {{to}}",
+    "periodMonth": "Kuukausi",
+    "periodYear": "Vuosi",
+    "periodCustom": "Mukautettu",
+    "chartAria": "Katselumäärät kohteen tyypin mukaan",
+    "episodes": "Jaksot",
+    "seasons": "Kaudet",
+    "shows": "Sarjat"
+  },
+  "longestToWatch": {
+    "title": "Pisin katseluaika",
+    "loading": "Ladataan sijoitusta…",
+    "loadFailed": "Pisin-katseluaika-sijoitusten lataus epäonnistui",
+    "empty": "Ei vielä sarjoja katseluhistorialla."
+  },
+  "favorites": {
+    "title": "Suosikit",
+    "loading": "Ladataan suosikkeja…",
+    "loadFailed": "Suosikkien lataus epäonnistui",
+    "empty": "Ei vielä suosikkeja. <link>Selaa kirjastoasi</link> lisätäksesi niitä.",
+    "browseLibrary": "Selaa kirjastoasi"
+  },
+  "streaks": {
+    "title": "Katseluputket",
+    "loading": "Ladataan putkia…",
+    "loadFailed": "Katseluputkien lataus epäonnistui",
+    "currentStreak": "Nykyinen putki (päivää)",
+    "longestStreak": "Pisin putki (päivää)",
+    "since": "Alkaen {{date}}"
+  },
+  "completion": {
+    "title": "Kirjaston valmius",
+    "loading": "Ladataan valmiutta…",
+    "loadFailed": "Kirjaston valmiuden lataus epäonnistui",
+    "overall": "Yhteensä · {{watched}} / {{total}} jaksoa",
+    "empty": "Kirjastossasi ei ole jaksoja sisältäviä sarjoja.",
+    "fullyWatched": "Kokonaan katsottu",
+    "showMeta": "{{watched}} / {{total}} jaksoa · {{percent}}"
+  },
+  "planToWatch": {
+    "title": "Aikomus katsoa",
+    "loading": "Ladataan aikomus-katsella-lukumäärää…",
+    "loadFailed": "Aikomus-katsella-lukumäärän lataus epäonnistui",
+    "label": "Sarjat joiden katsominen on suunniteltuna"
+  },
+  "duration": {
+    "zero": "0 min",
+    "days": "{{count}} pv",
+    "hours": "{{count}} h",
+    "minutes": "{{count}} min"
+  },
+  "utcSuffix": " UTC"
+}

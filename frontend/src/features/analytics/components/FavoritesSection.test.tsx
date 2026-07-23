@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import * as analyticsApi from '../../../api/analyticsApi'
 import * as showApi from '../../../api/showApi'
+import { renderWithI18n } from '../../../test/renderWithI18n'
 import { FavoritesSection } from './FavoritesSection'
 
 vi.mock('../../../api/analyticsApi', () => ({
@@ -22,7 +23,7 @@ function renderSection() {
     },
   })
 
-  return render(
+  return renderWithI18n(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
         <FavoritesSection />

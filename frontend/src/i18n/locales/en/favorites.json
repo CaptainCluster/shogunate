@@ -1,0 +1,15 @@
+{
+  "loading": "Loading favorites…",
+  "loadStatusFailed": "Failed to load favorite status",
+  "updateFailed": "Favorite update failed",
+  "suggestedBadge": "Suggested favorite",
+  "suggestedBadgeAria": "Suggested favorite",
+  "addToFavorites": "Add to favorites",
+  "removeFromFavorites": "Remove from favorites",
+  "addFailed": "Add failed",
+  "suggestions": {
+    "title": "Suggested favorites",
+    "loadFailed": "Failed to load suggestions",
+    "description": "Based on your highest-rated show and season reviews. Add any you want to keep as favorites."
+  }
+}

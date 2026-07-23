@@ -1,8 +1,9 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import { ConfirmProvider } from '../components/ConfirmProvider'
 import { useConfirm } from '../hooks/useConfirm'
+import { renderWithI18n } from '../test/renderWithI18n'
 
 afterEach(() => {
   cleanup()
@@ -32,7 +33,7 @@ describe('useConfirm', () => {
     const user = userEvent.setup()
     let confirmed: boolean | undefined
 
-    render(
+    renderWithI18n(
       <ConfirmProvider>
         <ConfirmHarness onResult={(value) => { confirmed = value }} />
       </ConfirmProvider>,
@@ -49,7 +50,7 @@ describe('useConfirm', () => {
     const user = userEvent.setup()
     let confirmed: boolean | undefined
 
-    render(
+    renderWithI18n(
       <ConfirmProvider>
         <ConfirmHarness onResult={(value) => { confirmed = value }} />
       </ConfirmProvider>,
@@ -66,7 +67,7 @@ describe('useConfirm', () => {
     const user = userEvent.setup()
     let confirmed: boolean | undefined
 
-    render(
+    renderWithI18n(
       <ConfirmProvider>
         <ConfirmHarness onResult={(value) => { confirmed = value }} />
       </ConfirmProvider>,

@@ -1,0 +1,57 @@
+{
+  "title": "Kirjastosi",
+  "inYourLibrary": "Kirjastossasi",
+  "loading": "Ladataan kirjastoa…",
+  "loadFailed": "Kirjaston lataus epäonnistui",
+  "empty": "Ei vielä sarjoja. <link>Hae sarjoja</link> lisätäksesi yhden.",
+  "searchForShows": "Hae sarjoja",
+  "statusLabel": "Tila: {{status}}",
+  "remove": "Poista",
+  "favoriteBadge": "Suosikki",
+  "backToLibrary": "← Takaisin kirjastoon",
+  "search": {
+    "title": "Hae tv-sarjoja",
+    "placeholder": "Hae sarjoja TVmazesta…",
+    "ariaLabel": "Hae sarjoja",
+    "submit": "Hae",
+    "results": "Hakutulokset",
+    "searching": "Haetaan…",
+    "failed": "Haku epäonnistui",
+    "noResults": "Sarjoja ei löytynyt.",
+    "addToLibrary": "Lisää kirjastoon",
+    "addFailed": "Lisäys epäonnistui"
+  },
+  "detail": {
+    "loading": "Ladataan sarjaa…",
+    "notFound": "Sarjaa ei löytynyt",
+    "premiered": "Ensiesitys: {{date}}",
+    "viewOnTvmaze": "Näytä TVmazessa",
+    "libraryStatus": "Kirjaston tila",
+    "seasons": "Kaudet",
+    "seasonNumber": "Kausi {{number}}",
+    "untitled": "Nimetön",
+    "rateShow": "Arvioi {{title}}",
+    "rateSeason": "Arvioi {{title}}",
+    "rateEpisode": "Arvioi jakso {{number}}",
+    "episodeLabel": "Jakso {{number}}",
+    "watchUpdateFailed": "Katselutilan päivitys epäonnistui"
+  },
+  "about": {
+    "title": "Kuvaus ja kiitokset",
+    "tvmazeIntro": "Sarjojen metatiedot ja kuvat tarjoaa <tvmaze>TVmaze</tvmaze> julkisen API:n kautta.",
+    "license": "TVmazen data on lisensoitu <license>CC BY-SA 4.0</license> -lisenssillä. TVmazesta peräisin olevien metatietojen näyttäminen edellyttää lähdemerkintää.",
+    "apiDocs": "API-dokumentaatio: <link>tvmaze.com/api</link>",
+    "goToLibrary": "Siirry kirjastoosi"
+  },
+  "status": {
+    "NONE": "Ei mitään",
+    "PLAN_TO_WATCH": "Aikomus katsoa",
+    "WATCHED": "Katsottu"
+  },
+  "removeConfirm": {
+    "button": "Poista kirjastosta",
+    "title": "Poistetaanko kirjastosta?",
+    "message": "Poistetaanko \"{{showTitle}}\" kirjastostasi? Tämä poistaa pysyvästi arviosi, katseluhistoriasi, katselutilasi ja suosikit tälle sarjalle.",
+    "confirm": "Poista"
+  }
+}

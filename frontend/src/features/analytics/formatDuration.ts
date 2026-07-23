@@ -1,6 +1,8 @@
+import i18n from '../../i18n/config'
+
 export function formatDuration(seconds: number): string {
   if (seconds <= 0) {
-    return '0m'
+    return i18n.t('duration.zero', { ns: 'analytics' })
   }
 
   const days = Math.floor(seconds / 86_400)
@@ -9,13 +11,13 @@ export function formatDuration(seconds: number): string {
 
   const parts: string[] = []
   if (days > 0) {
-    parts.push(`${days}d`)
+    parts.push(i18n.t('duration.days', { ns: 'analytics', count: days }))
   }
   if (hours > 0) {
-    parts.push(`${hours}h`)
+    parts.push(i18n.t('duration.hours', { ns: 'analytics', count: hours }))
   }
   if (minutes > 0 || parts.length === 0) {
-    parts.push(`${minutes}m`)
+    parts.push(i18n.t('duration.minutes', { ns: 'analytics', count: minutes }))
   }
 
   return parts.join(' ')
@@ -31,7 +33,7 @@ export function formatUtcDate(value: string): string {
     return value
   }
 
-  return `${date.toISOString().slice(0, 10)} UTC`
+  return `${date.toISOString().slice(0, 10)}${i18n.t('utcSuffix', { ns: 'analytics' })}`
 }
 
 export function formatUtcDateTime(value: string): string {
@@ -40,7 +42,7 @@ export function formatUtcDateTime(value: string): string {
     return value
   }
 
-  return `${date.toISOString().replace('T', ' ').slice(0, 16)} UTC`
+  return `${date.toISOString().replace('T', ' ').slice(0, 16)}${i18n.t('utcSuffix', { ns: 'analytics' })}`
 }
 
 export function todayIsoDate(): string {

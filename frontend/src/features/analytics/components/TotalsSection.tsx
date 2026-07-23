@@ -1,32 +1,34 @@
+import { useTranslation } from 'react-i18next'
 import type { TargetTypeCounts } from '../../../api/analyticsApi'
 import { getErrorMessage } from '../../../lib/getErrorMessage'
 import { useAnalyticsTotals } from '../hooks/useAnalytics'
 
 export function TotalsSection() {
+  const { t } = useTranslation('analytics')
   const totals = useAnalyticsTotals()
 
   return (
     <section className="analytics-section">
-      <h2>All-time totals</h2>
-      {totals.isLoading && <p>Loading totals…</p>}
+      <h2>{t('totals.title')}</h2>
+      {totals.isLoading && <p>{t('totals.loading')}</p>}
       {totals.error && (
         <p className="analytics-error">
-          {getErrorMessage(totals.error, 'Failed to load totals')}
+          {getErrorMessage(totals.error, t('totals.loadFailed'))}
         </p>
       )}
       {totals.data && (
         <div className="analytics-stat-grid">
           <div className="analytics-stat-card">
             <span className="analytics-stat-value">{totals.data.counts.episodes}</span>
-            <span className="analytics-stat-label">Episodes watched</span>
+            <span className="analytics-stat-label">{t('totals.episodesWatched')}</span>
           </div>
           <div className="analytics-stat-card">
             <span className="analytics-stat-value">{totals.data.counts.seasons}</span>
-            <span className="analytics-stat-label">Seasons watched</span>
+            <span className="analytics-stat-label">{t('totals.seasonsWatched')}</span>
           </div>
           <div className="analytics-stat-card">
             <span className="analytics-stat-value">{totals.data.counts.shows}</span>
-            <span className="analytics-stat-label">Shows watched</span>
+            <span className="analytics-stat-label">{t('totals.showsWatched')}</span>
           </div>
         </div>
       )}
@@ -39,15 +41,16 @@ interface CountBarChartProps {
 }
 
 export function CountBarChart({ counts }: CountBarChartProps) {
+  const { t } = useTranslation('analytics')
   const items = [
-    { label: 'Episodes', value: counts.episodes },
-    { label: 'Seasons', value: counts.seasons },
-    { label: 'Shows', value: counts.shows },
+    { label: t('watchCounts.episodes'), value: counts.episodes },
+    { label: t('watchCounts.seasons'), value: counts.seasons },
+    { label: t('watchCounts.shows'), value: counts.shows },
   ]
   const max = Math.max(...items.map((item) => item.value), 1)
 
   return (
-    <div className="analytics-bar-chart" aria-label="Watch counts by target type">
+    <div className="analytics-bar-chart" aria-label={t('watchCounts.chartAria')}>
       {items.map((item) => (
         <div key={item.label} className="analytics-bar-row">
           <span className="analytics-bar-label">{item.label}</span>

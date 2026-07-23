@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getErrorMessage } from '../../../lib/getErrorMessage'
 import { formatPercent } from '../formatDuration'
 import { useLibraryCompletion } from '../hooks/useAnalytics'
 
 export function LibraryCompletionSection() {
+  const { t } = useTranslation('analytics')
   const completion = useLibraryCompletion()
 
   return (
     <section className="analytics-section">
-      <h2>Library completion</h2>
-      {completion.isLoading && <p>Loading completion…</p>}
+      <h2>{t('completion.title')}</h2>
+      {completion.isLoading && <p>{t('completion.loading')}</p>}
       {completion.error && (
         <p className="analytics-error">
-          {getErrorMessage(completion.error, 'Failed to load library completion')}
+          {getErrorMessage(completion.error, t('completion.loadFailed'))}
         </p>
       )}
       {completion.data && (
@@ -22,7 +24,10 @@ export function LibraryCompletionSection() {
               {formatPercent(completion.data.overallCompletionPercent)}
             </span>
             <span className="analytics-stat-label">
-              Overall · {completion.data.watchedEpisodes} / {completion.data.totalEpisodes} episodes
+              {t('completion.overall', {
+                watched: completion.data.watchedEpisodes,
+                total: completion.data.totalEpisodes,
+              })}
             </span>
             <div className="analytics-bar-track analytics-bar-track--summary">
               <div
@@ -32,7 +37,7 @@ export function LibraryCompletionSection() {
             </div>
           </div>
           {completion.data.shows.length === 0 ? (
-            <p>No shows with episodes in your library.</p>
+            <p>{t('completion.empty')}</p>
           ) : (
             <ul className="analytics-completion-list">
               {completion.data.shows.map((show) => (
@@ -40,12 +45,15 @@ export function LibraryCompletionSection() {
                   <div className="analytics-completion-header">
                     <Link to={`/library/${show.showId}`}>{show.title}</Link>
                     {show.fullyWatched && (
-                      <span className="analytics-badge">Fully watched</span>
+                      <span className="analytics-badge">{t('completion.fullyWatched')}</span>
                     )}
                   </div>
                   <span className="analytics-completion-meta">
-                    {show.watchedEpisodes} / {show.totalEpisodes} episodes ·{' '}
-                    {formatPercent(show.completionPercent)}
+                    {t('completion.showMeta', {
+                      watched: show.watchedEpisodes,
+                      total: show.totalEpisodes,
+                      percent: formatPercent(show.completionPercent),
+                    })}
                   </span>
                   <div className="analytics-bar-track">
                     <div

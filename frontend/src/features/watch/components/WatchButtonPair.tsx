@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { useConfirm } from '../../../hooks/useConfirm'
 import type { WatchTargetType } from '../watchKeys'
 import { useWatchMutations, type PendingWatchAction } from '../hooks/useWatchMutations'
@@ -23,11 +24,11 @@ interface WatchButtonPairProps {
   mutations: WatchMutationsApi
 }
 
-function formatWatchedAt(watchedAt: string | null) {
+function formatWatchedAt(watchedAt: string | null, locale: string) {
   if (!watchedAt) {
     return null
   }
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(new Date(watchedAt))
@@ -43,6 +44,7 @@ export function WatchButtonPair({
   seasonCount = 0,
   mutations,
 }: WatchButtonPairProps) {
+  const { t, i18n } = useTranslation('watch')
   const { confirm } = useConfirm()
   const {
     markEpisode,
@@ -78,12 +80,13 @@ export function WatchButtonPair({
     }
 
     const confirmed = await confirm({
-      title: targetType === 'SEASON' ? 'Unmark season?' : 'Unmark show?',
+      title: targetType === 'SEASON' ? t('unmarkSeason.title') : t('unmarkShow.title'),
       message:
         targetType === 'SEASON'
-          ? `Unmark this season and all ${episodeCount} episodes as unwatched?`
-          : `Unmark this show and all ${seasonCount} seasons (${episodeCount} episodes) as unwatched?`,
-      confirmLabel: 'Unmark',
+          ? t('unmarkSeason.message', { episodeCount })
+          : t('unmarkShow.message', { seasonCount, episodeCount }),
+      confirmLabel:
+        targetType === 'SEASON' ? t('unmarkSeason.confirm') : t('unmarkShow.confirm'),
     })
 
     if (!confirmed) {
@@ -97,34 +100,36 @@ export function WatchButtonPair({
     }
   }
 
-  const formattedWatchedAt = formatWatchedAt(watchedAt)
+  const formattedWatchedAt = formatWatchedAt(watchedAt, i18n.language)
 
   return (
     <span className="watch-controls">
       {watched ? (
         <>
           {formattedWatchedAt && (
-            <span className="watch-timestamp">Watched {formattedWatchedAt}</span>
+            <span className="watch-timestamp">
+              {t('watchedAt', { date: formattedWatchedAt })}
+            </span>
           )}
           <button
             type="button"
             className="watch-button watch-button-unmark"
-            aria-label={`Unmark ${label} as watched`}
+            aria-label={t('unmarkAriaLabel', { label })}
             disabled={isThisPending}
             onClick={() => void handleUnmark()}
           >
-            Unmark
+            {t('unmark')}
           </button>
         </>
       ) : (
         <button
           type="button"
           className="watch-button watch-button-mark"
-          aria-label={`Mark ${label} as watched`}
+          aria-label={t('markAriaLabel', { label })}
           disabled={isThisPending}
           onClick={handleMark}
         >
-          Mark watched
+          {t('markWatched')}
         </button>
       )}
     </span>

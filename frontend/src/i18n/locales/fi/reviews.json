@@ -1,0 +1,16 @@
+{
+  "rating": "Arvio",
+  "review": "Arvio",
+  "reviewText": "Arvion teksti",
+  "placeholder": "Kirjoita arvio…",
+  "saveReview": "Tallenna arvio",
+  "deleteReview": "Poista arvio",
+  "showDetails": "Näytä arvion tiedot",
+  "hideDetails": "Piilota arvion tiedot",
+  "loading": "Ladataan arviota…",
+  "loadFailed": "Arvion lataus epäonnistui",
+  "updateFailed": "Arvion päivitys epäonnistui",
+  "setStars": "Aseta {{count}} tähteä",
+  "setHalfStars": "Aseta {{count}} ja puoli tähteä",
+  "starRating": "Tähtiarvio"
+}

@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { ConfirmProvider } from '../../../components/ConfirmProvider'
 import * as showApi from '../../../api/showApi'
+import { renderWithI18n } from '../../../test/renderWithI18n'
 import { RemoveFromLibraryButton } from './RemoveFromLibraryButton'
 
 vi.mock('../../../api/showApi', () => ({
@@ -18,7 +19,7 @@ function renderWithProviders(ui: React.ReactElement) {
     },
   })
 
-  return render(
+  return renderWithI18n(
     <QueryClientProvider client={queryClient}>
       <ConfirmProvider>{ui}</ConfirmProvider>
     </QueryClientProvider>,

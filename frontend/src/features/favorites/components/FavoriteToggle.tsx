@@ -45,7 +45,7 @@ export function FavoriteToggle({ showId }: FavoriteToggleProps) {
       )}
       <button
         type="button"
-        className={isFavorite ? 'favorite-toggle--active' : undefined}
+        className={`ui-button ui-button--ghost${isFavorite ? ' favorite-toggle--active ui-button--active' : ''}`}
         disabled={mutations.isPending}
         aria-pressed={isFavorite}
         onClick={handleToggle}

@@ -113,7 +113,7 @@ export function WatchButtonPair({
           )}
           <button
             type="button"
-            className="watch-button watch-button-unmark"
+            className="ui-button ui-button--ghost watch-button watch-button-unmark"
             aria-label={t('unmarkAriaLabel', { label })}
             disabled={isThisPending}
             onClick={() => void handleUnmark()}
@@ -124,7 +124,7 @@ export function WatchButtonPair({
       ) : (
         <button
           type="button"
-          className="watch-button watch-button-mark"
+          className="ui-button ui-button--primary watch-button watch-button-mark"
           aria-label={t('markAriaLabel', { label })}
           disabled={isThisPending}
           onClick={handleMark}

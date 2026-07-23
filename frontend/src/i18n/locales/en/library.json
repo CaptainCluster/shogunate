@@ -34,7 +34,8 @@
     "rateSeason": "Rate {{title}}",
     "rateEpisode": "Rate episode {{number}}",
     "episodeLabel": "Episode {{number}}",
-    "watchUpdateFailed": "Watch update failed"
+    "watchUpdateFailed": "Watch update failed",
+    "actionsAria": "Show actions"
   },
   "about": {
     "title": "About & credits",

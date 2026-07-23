@@ -112,6 +112,7 @@ function ReviewEditorForm({
           <div className="review-editor__actions">
             <button
               type="button"
+              className="ui-button ui-button--primary"
               disabled={mutations.isPending || !isValidRating(rating)}
               onClick={handleSave}
             >
@@ -120,7 +121,7 @@ function ReviewEditorForm({
             {review && (
               <button
                 type="button"
-                className="review-editor__delete"
+                className="ui-button ui-button--ghost review-editor__delete"
                 disabled={mutations.isPending}
                 onClick={handleDelete}
               >

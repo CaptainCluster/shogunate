@@ -34,7 +34,8 @@
     "rateSeason": "Arvioi {{title}}",
     "rateEpisode": "Arvioi jakso {{number}}",
     "episodeLabel": "Jakso {{number}}",
-    "watchUpdateFailed": "Katselutilan päivitys epäonnistui"
+    "watchUpdateFailed": "Katselutilan päivitys epäonnistui",
+    "actionsAria": "Sarjan toiminnot"
   },
   "about": {
     "title": "Kuvaus ja kiitokset",

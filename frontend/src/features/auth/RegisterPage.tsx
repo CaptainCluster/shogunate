@@ -32,6 +32,7 @@ export function RegisterPage() {
         <label>
           {t('register.username')}
           <input
+            className="ui-input"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -44,6 +45,7 @@ export function RegisterPage() {
         <label>
           {t('register.password')}
           <input
+            className="ui-input"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -52,7 +54,7 @@ export function RegisterPage() {
           />
         </label>
         {error && <p className="auth-error">{error}</p>}
-        <button type="submit" disabled={registerMutation.isPending}>
+        <button type="submit" className="ui-button ui-button--primary" disabled={registerMutation.isPending}>
           {t('register.submit')}
         </button>
       </form>

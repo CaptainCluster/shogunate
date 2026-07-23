@@ -22,6 +22,7 @@ function SuggestionRow({ show }: SuggestionRowProps) {
       </div>
       <button
         type="button"
+        className="ui-button ui-button--ghost"
         disabled={mutations.isPending}
         onClick={() => mutations.addFavorite.mutate()}
       >

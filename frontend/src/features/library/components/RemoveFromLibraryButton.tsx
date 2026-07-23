@@ -38,6 +38,7 @@ export function RemoveFromLibraryButton({
   return (
     <button
       type="button"
+      className="ui-button ui-button--ghost"
       disabled={disabled ?? removeShow.isPending}
       onClick={() => void handleClick()}
     >

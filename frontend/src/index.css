@@ -10,6 +10,25 @@
   --social-bg: rgba(244, 243, 236, 0.5);
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  --color-error: #c0392b;
+  --color-success: #16a34a;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  --content-max: 960px;
+  --bp-tablet: 768px;
+  --bp-desktop: 1024px;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
@@ -43,6 +62,8 @@
     --social-bg: rgba(47, 48, 58, 0.5);
     --shadow:
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
+    --color-error: #f87171;
+    --color-success: #86efac;
   }
 
   #social .button-icon {
@@ -51,11 +72,9 @@
 }
 
 #root {
-  width: 1126px;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -76,17 +95,17 @@ h2 {
 h1 {
   font-size: 56px;
   letter-spacing: -1.68px;
-  margin: 32px 0;
+  margin: var(--space-8) 0;
   @media (max-width: 1024px) {
     font-size: 36px;
-    margin: 20px 0;
+    margin: var(--space-5) 0;
   }
 }
 h2 {
   font-size: 24px;
   line-height: 118%;
   letter-spacing: -0.24px;
-  margin: 0 0 8px;
+  margin: 0 0 var(--space-2);
   @media (max-width: 1024px) {
     font-size: 20px;
   }
@@ -99,13 +118,13 @@ code,
 .counter {
   font-family: var(--mono);
   display: inline-flex;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   color: var(--text-h);
 }
 
 code {
   font-size: 15px;
   line-height: 135%;
-  padding: 4px 8px;
+  padding: var(--space-1) var(--space-2);
   background: var(--code-bg);
 }

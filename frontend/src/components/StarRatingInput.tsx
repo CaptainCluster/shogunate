@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getStarFill, isValidRating, ratingFromStarClick } from './starRatingUtils'
 import './starRating.css'
@@ -18,6 +18,9 @@ export function StarRatingInput({
 }: StarRatingInputProps) {
   const { t } = useTranslation('reviews')
   const resolvedLabel = label ?? t('rating')
+  const [hoverRating, setHoverRating] = useState<number | null>(null)
+
+  const displayRating = hoverRating ?? value
 
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
@@ -38,6 +41,10 @@ export function StarRatingInput({
     [disabled, onChange, value],
   )
 
+  function clearHover() {
+    setHoverRating(null)
+  }
+
   return (
     <span
       className="star-rating star-rating--input"
@@ -49,9 +56,12 @@ export function StarRatingInput({
       aria-label={resolvedLabel}
       aria-disabled={disabled}
       onKeyDown={handleKeyDown}
+      onMouseLeave={clearHover}
     >
       {[1, 2, 3, 4, 5].map((starIndex) => {
-        const fill = isValidRating(value) ? getStarFill(starIndex, value) : 'empty'
+        const fill = isValidRating(displayRating) ? getStarFill(starIndex, displayRating) : 'empty'
+        const leftRating = ratingFromStarClick(starIndex, 'left')
+        const rightRating = ratingFromStarClick(starIndex, 'right')
 
         return (
           <span key={starIndex} className="star-rating__star-wrapper">
@@ -59,15 +69,21 @@ export function StarRatingInput({
               type="button"
               className="star-rating__half star-rating__half--left"
               disabled={disabled}
-              aria-label={t('setStars', { count: starIndex })}
-              onClick={() => onChange(ratingFromStarClick(starIndex, 'left'))}
+              aria-label={
+                leftRating % 1 === 0
+                  ? t('setStars', { count: leftRating })
+                  : t('setHalfStars', { count: Math.floor(leftRating) })
+              }
+              onMouseEnter={() => setHoverRating(leftRating)}
+              onClick={() => onChange(leftRating)}
             />
             <button
               type="button"
               className="star-rating__half star-rating__half--right"
               disabled={disabled}
-              aria-label={t('setHalfStars', { count: starIndex })}
-              onClick={() => onChange(ratingFromStarClick(starIndex, 'right'))}
+              aria-label={t('setStars', { count: rightRating })}
+              onMouseEnter={() => setHoverRating(rightRating)}
+              onClick={() => onChange(rightRating)}
             />
             <span className={`star-rating__star star-rating__star--${fill}`} aria-hidden>
               <span className="star-rating__star-bg">☆</span>

@@ -49,26 +49,37 @@ export function ShowDetailPage() {
 
   return (
     <div className="library-page">
-      <p>
-        <Link to="/library">{t('backToLibrary')}</Link>
-      </p>
+      <nav className="library-back-nav">
+        <Link to="/library" className="library-back-link">
+          {t('backToLibrary')}
+        </Link>
+      </nav>
 
-      <div className="library-detail-header">
+      <div className="library-detail-hero">
         {data.posterUrl && (
-          <img src={data.posterUrl} alt="" className="library-detail-poster" />
+          <figure className="library-detail-poster-frame">
+            <img src={data.posterUrl} alt="" className="library-detail-poster" />
+          </figure>
         )}
-        <div>
+        <div className="library-detail-info">
           <h1>{data.title}</h1>
-          {data.firstAirDate && <p>{t('detail.premiered', { date: data.firstAirDate })}</p>}
-          {data.overview && <p>{data.overview}</p>}
+          {data.firstAirDate && (
+            <p className="library-detail-meta">{t('detail.premiered', { date: data.firstAirDate })}</p>
+          )}
+          {data.overview && <p className="library-detail-overview">{data.overview}</p>}
           {data.tvmazeUrl && (
-            <p>
+            <p className="library-detail-meta">
               <a href={data.tvmazeUrl} target="_blank" rel="noreferrer">
                 {t('detail.viewOnTvmaze')}
               </a>
             </p>
           )}
-          <div className="show-watch-controls">
+        </div>
+      </div>
+
+      <section className="library-detail-actions" aria-label={t('detail.actionsAria')}>
+        <div className="library-detail-watch-row">
+          <div className="library-detail-watch-row__controls">
             <WatchButtonPair
               targetType="SHOW"
               targetId={data.id}
@@ -80,44 +91,54 @@ export function ShowDetailPage() {
               mutations={mutationProps}
             />
           </div>
-          {watchMutations.error && (
-            <p className="library-error watch-error">
-              {getErrorMessage(watchMutations.error, t('detail.watchUpdateFailed'))}
-            </p>
-          )}
-          <FavoriteToggle showId={data.id} />
-          <WatchedReviewEditor
-            watched={data.watched}
-            className="show-review"
-            targetType="SHOW"
-            targetId={data.id}
-            label={t('detail.rateShow', { title: data.title })}
-          />
-          <label htmlFor="library-status">{t('detail.libraryStatus')}</label>
-          {data.libraryStatus === 'WATCHED' ? (
-            <p id="library-status">{formatLibraryStatus(data.libraryStatus)}</p>
-          ) : (
-            <select
-              id="library-status"
-              value={data.libraryStatus}
-              disabled={watchMutations.isPending || updateStatus.isPending}
-              onChange={(event) =>
-                updateStatus.mutate(event.target.value as 'NONE' | 'PLAN_TO_WATCH')
-              }
-            >
-              <option value="NONE">{formatLibraryStatus('NONE')}</option>
-              <option value="PLAN_TO_WATCH">{formatLibraryStatus('PLAN_TO_WATCH')}</option>
-            </select>
-          )}
-          <p>
-            <RemoveFromLibraryButton
-              showId={id}
-              showTitle={data.title}
-              onSuccess={() => navigate('/library')}
-            />
-          </p>
+          <div className="library-detail-watch-row__status">
+            <span className="library-detail-status__label" id="library-status-label">
+              {t('detail.libraryStatus')}
+            </span>
+            {data.libraryStatus === 'WATCHED' ? (
+              <span
+                id="library-status"
+                className="library-detail-status__value library-detail-status__value--watched"
+                aria-labelledby="library-status-label"
+              >
+                {formatLibraryStatus(data.libraryStatus)}
+              </span>
+            ) : (
+              <select
+                id="library-status"
+                className="ui-select library-detail-status__select"
+                aria-labelledby="library-status-label"
+                value={data.libraryStatus}
+                disabled={watchMutations.isPending || updateStatus.isPending}
+                onChange={(event) =>
+                  updateStatus.mutate(event.target.value as 'NONE' | 'PLAN_TO_WATCH')
+                }
+              >
+                <option value="NONE">{formatLibraryStatus('NONE')}</option>
+                <option value="PLAN_TO_WATCH">{formatLibraryStatus('PLAN_TO_WATCH')}</option>
+              </select>
+            )}
+          </div>
         </div>
-      </div>
+        {watchMutations.error && (
+          <p className="library-error watch-error">
+            {getErrorMessage(watchMutations.error, t('detail.watchUpdateFailed'))}
+          </p>
+        )}
+        <FavoriteToggle showId={data.id} />
+        <WatchedReviewEditor
+          watched={data.watched}
+          className="show-review"
+          targetType="SHOW"
+          targetId={data.id}
+          label={t('detail.rateShow', { title: data.title })}
+        />
+        <RemoveFromLibraryButton
+          showId={id}
+          showTitle={data.title}
+          onSuccess={() => navigate('/library')}
+        />
+      </section>
 
       <h2>{t('detail.seasons')}</h2>
       {data.seasons.map((season) => {

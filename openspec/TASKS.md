@@ -254,6 +254,11 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   *Acceptance:* All UI strings come from locale JSON; switching language updates the UI without reload; choice persists across sessions; `document.documentElement.lang` matches active locale.
   *Ref: `openspec/specs/i18n/spec.md`*
 
+- [x] **7.6 — Frontend UI refinement**
+  CSS-only visual refresh: design tokens, shared UI primitives, responsive layouts, consistent spacing, and dark-mode-safe styling without changing UX flows.
+  *Acceptance:* Pages usable at 320px+ without horizontal overflow; shared button/input styles across pages; mobile hamburger nav; consistent spacing rhythm.
+  *Ref: `openspec/specs/frontend-ui/spec.md`*
+
 ---
 
 

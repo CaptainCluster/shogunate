@@ -249,6 +249,11 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
   Manually walk the full flow: register → login → add show → mark episodes/season/show watched (and unmark with confirmation) → write reviews → flag favorite → view analytics.
   *Ref: PRD §5 (all functional requirements)*
 
+- [x] **7.5 — Frontend i18n**
+  Add `react-i18next` with English (default) and Finnish locale files; migrate all frontend-owned UI copy to translations; header EN/FI language switch with `localStorage` persistence.
+  *Acceptance:* All UI strings come from locale JSON; switching language updates the UI without reload; choice persists across sessions; `document.documentElement.lang` matches active locale.
+  *Ref: `openspec/specs/i18n/spec.md`*
+
 ---
 
 

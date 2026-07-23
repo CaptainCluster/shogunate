@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 import * as watchApi from '../../../api/watchApi'
+import { analyticsKeys } from '../../analytics/analyticsKeys'
 import { showKeys } from '../../library/showKeys'
 import { useWatchMutations } from './useWatchMutations'
 
@@ -44,6 +45,7 @@ describe('useWatchMutations', () => {
 
     expect(watchApi.markEpisodeWatched).toHaveBeenCalledWith('episode-1')
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: showKeys.detail('show-1') })
+    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: analyticsKeys.all })
   })
 
   it('calls unmarkSeasonWatched with confirm=true', async () => {

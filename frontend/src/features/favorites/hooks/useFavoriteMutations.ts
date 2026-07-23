@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as favoriteApi from '../../../api/favoriteApi'
+import { invalidateAllAnalyticsQueries } from '../../analytics/hooks/useAnalytics'
 import { favoriteKeys } from '../favoriteKeys'
 
 function invalidateFavoriteQueries(
@@ -10,6 +11,7 @@ function invalidateFavoriteQueries(
     queryClient.invalidateQueries({ queryKey: favoriteKeys.list() }),
     queryClient.invalidateQueries({ queryKey: favoriteKeys.suggestions() }),
     queryClient.invalidateQueries({ queryKey: favoriteKeys.status(showId) }),
+    invalidateAllAnalyticsQueries(queryClient),
   ])
 }
 

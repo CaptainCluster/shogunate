@@ -33,4 +33,4 @@
 ## 5. Close-out
 
 - [x] 5.1 Verify `/swagger-ui.html` lists all seven analytics endpoints with summaries
-- [ ] 5.2 On archive: check off Phase 6 tasks 6.1, 6.2, 6.3, 6.5 in `openspec/TASKS.md`
+- [x] 5.2 On archive: check off Phase 6 tasks 6.1, 6.2, 6.3, 6.5 in `openspec/TASKS.md`

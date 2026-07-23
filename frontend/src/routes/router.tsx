@@ -6,6 +6,7 @@ import { AboutPage } from '../features/library/AboutPage'
 import { LibraryPage } from '../features/library/LibraryPage'
 import { SearchPage } from '../features/library/SearchPage'
 import { ShowDetailPage } from '../features/library/ShowDetailPage'
+import { AnalyticsPage } from '../features/analytics/AnalyticsPage'
 import { HomePage } from '../features/home/HomePage'
 import { GuestRoute, ProtectedRoute } from './ProtectedRoute'
 
@@ -31,6 +32,10 @@ export const router = createBrowserRouter([
           {
             path: '/library/:id',
             element: <ShowDetailPage />,
+          },
+          {
+            path: '/analytics',
+            element: <AnalyticsPage />,
           },
           {
             path: '/about',

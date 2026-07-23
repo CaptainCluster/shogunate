@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import * as showApi from '../../../api/showApi'
+import { invalidateAllAnalyticsQueries } from '../../analytics/hooks/useAnalytics'
 import { invalidateAllFavoriteQueries } from '../../favorites/hooks/useFavoriteMutations'
 import { showKeys } from '../showKeys'
 
@@ -32,6 +33,7 @@ export function useAddShow() {
     mutationFn: (tvmazeId: number) => showApi.addShow(tvmazeId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: showKeys.library() })
+      invalidateAllAnalyticsQueries(queryClient)
     },
   })
 }
@@ -44,6 +46,7 @@ export function useUpdateLibraryStatus(showId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: showKeys.library() })
       queryClient.invalidateQueries({ queryKey: showKeys.detail(showId) })
+      invalidateAllAnalyticsQueries(queryClient)
     },
   })
 }
@@ -55,6 +58,7 @@ export function useRemoveShow() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: showKeys.library() })
       invalidateAllFavoriteQueries(queryClient)
+      invalidateAllAnalyticsQueries(queryClient)
     },
   })
 }

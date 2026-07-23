@@ -37,7 +37,7 @@
     "watchUpdateFailed": "Katselutilan päivitys epäonnistui"
   },
   "about": {
-    "title": "Tietoa ja kiitokset",
+    "title": "Kuvaus ja kiitokset",
     "tvmazeIntro": "Sarjojen metatiedot ja kuvat tarjoaa <tvmaze>TVmaze</tvmaze> julkisen API:n kautta.",
     "license": "TVmazen data on lisensoitu <license>CC BY-SA 4.0</license> -lisenssillä. TVmazesta peräisin olevien metatietojen näyttäminen edellyttää lähdemerkintää.",
     "apiDocs": "API-dokumentaatio: <link>tvmaze.com/api</link>",

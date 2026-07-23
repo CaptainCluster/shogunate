@@ -1,6 +1,6 @@
 {
   "title": "Analytiikka",
-  "intro": "Henkilökohtaiset katselutilastosi. Kaikki päivämäärät hyödyntävät UTC-aikaa.",
+  "intro": "Henkilökohtaiset katselutilastosi. Kaikki päivämäärät hyödyntä UTC-aikaa.",
   "totals": {
     "title": "Kaikkien aikojen yhteensä",
     "loading": "Ladataan yhteensä…",
@@ -62,7 +62,7 @@
     "title": "Aikomus katsoa",
     "loading": "Ladataan aikomus-katsella-lukumäärää…",
     "loadFailed": "Aikomus-katsella-lukumäärän lataus epäonnistui",
-    "label": "Sarjoja merkitty aikomukseksi katsoa"
+    "label": "Sarjat joiden katsominen on suunniteltuna"
   },
   "duration": {
     "zero": "0 min",

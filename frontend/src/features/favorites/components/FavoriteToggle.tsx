@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import { getErrorMessage } from '../../../lib/getErrorMessage'
 import { useFavoriteMutations } from '../hooks/useFavoriteMutations'
 import { useFavoriteStatus } from '../hooks/useFavorites'
@@ -8,17 +9,18 @@ interface FavoriteToggleProps {
 }
 
 export function FavoriteToggle({ showId }: FavoriteToggleProps) {
+  const { t } = useTranslation('favorites')
   const status = useFavoriteStatus(showId)
   const mutations = useFavoriteMutations(showId)
 
   if (status.isLoading) {
-    return <p className="favorite-controls">Loading favorites…</p>
+    return <p className="favorite-controls">{t('loading')}</p>
   }
 
   if (status.error || !status.data) {
     return (
       <p className="library-error">
-        {getErrorMessage(status.error, 'Failed to load favorite status')}
+        {getErrorMessage(status.error, t('loadStatusFailed'))}
       </p>
     )
   }
@@ -37,8 +39,8 @@ export function FavoriteToggle({ showId }: FavoriteToggleProps) {
   return (
     <div className="favorite-controls">
       {showSuggestedBadge && (
-        <span className="favorite-badge" aria-label="Suggested favorite">
-          Suggested favorite
+        <span className="favorite-badge" aria-label={t('suggestedBadgeAria')}>
+          {t('suggestedBadge')}
         </span>
       )}
       <button
@@ -48,10 +50,10 @@ export function FavoriteToggle({ showId }: FavoriteToggleProps) {
         aria-pressed={isFavorite}
         onClick={handleToggle}
       >
-        {isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+        {isFavorite ? t('removeFromFavorites') : t('addToFavorites')}
       </button>
       {mutations.error && (
-        <p className="library-error">{getErrorMessage(mutations.error, 'Favorite update failed')}</p>
+        <p className="library-error">{getErrorMessage(mutations.error, t('updateFailed'))}</p>
       )}
     </div>
   )

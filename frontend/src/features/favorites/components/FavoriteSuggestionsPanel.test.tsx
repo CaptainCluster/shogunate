@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import * as favoriteApi from '../../../api/favoriteApi'
 import * as showApi from '../../../api/showApi'
+import { renderWithI18n } from '../../../test/renderWithI18n'
 import { FavoriteSuggestionsPanel } from './FavoriteSuggestionsPanel'
 
 vi.mock('../../../api/favoriteApi', () => ({
@@ -24,7 +25,7 @@ function renderPanel() {
     },
   })
 
-  return render(
+  return renderWithI18n(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
         <FavoriteSuggestionsPanel />

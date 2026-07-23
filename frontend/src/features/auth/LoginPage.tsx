@@ -1,11 +1,13 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useLogin } from './hooks/useLogin'
 import { getErrorMessage } from '../../lib/getErrorMessage'
 import './auth.css'
 
 export function LoginPage() {
+  const { t } = useTranslation('auth')
   const loginMutation = useLogin()
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -17,16 +19,16 @@ export function LoginPage() {
     try {
       await loginMutation.mutateAsync({ username, password })
     } catch (err) {
-      setError(getErrorMessage(err, 'Login failed'))
+      setError(getErrorMessage(err, t('login.failed')))
     }
   }
 
   return (
     <section className="auth-page">
-      <h1>Log in</h1>
+      <h1>{t('login.title')}</h1>
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
-          Username
+          {t('login.username')}
           <input
             type="text"
             value={username}
@@ -38,7 +40,7 @@ export function LoginPage() {
           />
         </label>
         <label>
-          Password
+          {t('login.password')}
           <input
             type="password"
             value={password}
@@ -48,11 +50,11 @@ export function LoginPage() {
         </label>
         {error && <p className="auth-error">{error}</p>}
         <button type="submit" disabled={loginMutation.isPending}>
-          Log in
+          {t('login.submit')}
         </button>
       </form>
       <div className="auth-links">
-        <Link to="/register">Create an account</Link>
+        <Link to="/register">{t('login.createAccount')}</Link>
       </div>
     </section>
   )

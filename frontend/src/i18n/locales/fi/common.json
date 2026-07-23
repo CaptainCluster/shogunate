@@ -1,0 +1,32 @@
+{
+  "brand": "Shogunate",
+  "pageTitle": "Shogunate",
+  "nav": {
+    "home": "Etusivu",
+    "library": "Kirjasto",
+    "search": "Haku",
+    "analytics": "Analytiikka",
+    "about": "Tietoa",
+    "login": "Kirjaudu",
+    "register": "Rekisteröidy",
+    "logout": "Kirjaudu ulos"
+  },
+  "loading": "Ladataan…",
+  "confirm": {
+    "confirm": "Vahvista",
+    "cancel": "Peruuta"
+  },
+  "languageSwitch": {
+    "ariaLabel": "Kieli",
+    "en": "EN",
+    "fi": "FI"
+  },
+  "home": {
+    "tagline": "Seuraa tv-sarjojasi, kausia ja jaksoja.",
+    "signedInAs": "Kirjautuneena käyttäjänä {{username}}",
+    "browseLibrary": "Selaa kirjastoasi",
+    "searchShows": "Hae sarjoja",
+    "viewAnalytics": "Näytä analytiikka",
+    "guestPrompt": "<login>Kirjaudu</login> tai <register>luo tili</register> aloittaaksesi."
+  }
+}

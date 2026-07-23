@@ -1,0 +1,74 @@
+{
+  "title": "Analytics",
+  "intro": "Your personal watch statistics. All dates shown in UTC.",
+  "totals": {
+    "title": "All-time totals",
+    "loading": "Loading totals…",
+    "loadFailed": "Failed to load totals",
+    "episodesWatched": "Episodes watched",
+    "seasonsWatched": "Seasons watched",
+    "showsWatched": "Shows watched"
+  },
+  "watchCounts": {
+    "title": "Watch counts by period",
+    "periodTypeAria": "Period type",
+    "month": "Month",
+    "year": "Year",
+    "custom": "Custom",
+    "from": "From",
+    "to": "To",
+    "loading": "Loading watch counts…",
+    "loadFailed": "Failed to load watch counts",
+    "periodMeta": "Period: {{period}} · {{from}} – {{to}}",
+    "periodMonth": "Month",
+    "periodYear": "Year",
+    "periodCustom": "Custom",
+    "chartAria": "Watch counts by target type",
+    "episodes": "Episodes",
+    "seasons": "Seasons",
+    "shows": "Shows"
+  },
+  "longestToWatch": {
+    "title": "Longest time to watch",
+    "loading": "Loading ranking…",
+    "loadFailed": "Failed to load longest-to-watch ranking",
+    "empty": "No shows with watch history yet."
+  },
+  "favorites": {
+    "title": "Favorites",
+    "loading": "Loading favorites…",
+    "loadFailed": "Failed to load favorites",
+    "empty": "No favorites yet. <link>Browse your library</link> to add some.",
+    "browseLibrary": "Browse your library"
+  },
+  "streaks": {
+    "title": "Watch streaks",
+    "loading": "Loading streaks…",
+    "loadFailed": "Failed to load watch streaks",
+    "currentStreak": "Current streak (days)",
+    "longestStreak": "Longest streak (days)",
+    "since": "Since {{date}}"
+  },
+  "completion": {
+    "title": "Library completion",
+    "loading": "Loading completion…",
+    "loadFailed": "Failed to load library completion",
+    "overall": "Overall · {{watched}} / {{total}} episodes",
+    "empty": "No shows with episodes in your library.",
+    "fullyWatched": "Fully watched",
+    "showMeta": "{{watched}} / {{total}} episodes · {{percent}}"
+  },
+  "planToWatch": {
+    "title": "Plan to watch",
+    "loading": "Loading plan-to-watch count…",
+    "loadFailed": "Failed to load plan-to-watch count",
+    "label": "Shows flagged plan to watch"
+  },
+  "duration": {
+    "zero": "0m",
+    "days": "{{count}}d",
+    "hours": "{{count}}h",
+    "minutes": "{{count}}m"
+  },
+  "utcSuffix": " UTC"
+}

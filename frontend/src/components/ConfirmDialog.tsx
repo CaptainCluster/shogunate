@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import './ConfirmDialog.css'
 
 export interface ConfirmDialogProps {
@@ -16,12 +17,13 @@ export function ConfirmDialog({
   open,
   title,
   message,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   isPending = false,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const { t } = useTranslation('common')
   const titleId = useId()
   const messageId = useId()
   const confirmRef = useRef<HTMLButtonElement>(null)
@@ -61,7 +63,7 @@ export function ConfirmDialog({
         <p id={messageId}>{message}</p>
         <div className="confirm-actions">
           <button type="button" onClick={onCancel} disabled={isPending}>
-            {cancelLabel}
+            {cancelLabel ?? t('confirm.cancel')}
           </button>
           <button
             ref={confirmRef}
@@ -70,7 +72,7 @@ export function ConfirmDialog({
             onClick={onConfirm}
             disabled={isPending}
           >
-            {confirmLabel}
+            {confirmLabel ?? t('confirm.confirm')}
           </button>
         </div>
       </div>

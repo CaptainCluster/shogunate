@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
 import * as showApi from '../../api/showApi'
+import { renderWithI18n } from '../../test/renderWithI18n'
 import { SearchPage } from './SearchPage'
 
 vi.mock('../../api/showApi', () => ({
@@ -19,7 +20,7 @@ function renderSearchPage() {
     },
   })
 
-  return render(
+  return renderWithI18n(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
         <SearchPage />

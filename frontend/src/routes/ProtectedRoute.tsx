@@ -1,11 +1,13 @@
 import { Navigate, Outlet } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../hooks/useAuth'
 
 export function ProtectedRoute() {
   const { user, isLoading } = useAuth()
+  const { t } = useTranslation('common')
 
   if (isLoading) {
-    return <p>Loading...</p>
+    return <p>{t('loading')}</p>
   }
 
   if (!user) {
@@ -17,9 +19,10 @@ export function ProtectedRoute() {
 
 export function GuestRoute() {
   const { user, isLoading } = useAuth()
+  const { t } = useTranslation('common')
 
   if (isLoading) {
-    return <p>Loading...</p>
+    return <p>{t('loading')}</p>
   }
 
   if (user) {

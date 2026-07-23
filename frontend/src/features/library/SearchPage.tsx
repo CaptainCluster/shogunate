@@ -1,12 +1,14 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import type { ShowSearchResult } from '../../api/showApi'
 import { getErrorMessage } from '../../lib/getErrorMessage'
 import { useAddShow, useShowSearch } from './hooks/useShowLibrary'
 import './LibraryPage.css'
 
 export function SearchPage() {
+  const { t } = useTranslation('library')
   const [searchInput, setSearchInput] = useState('')
   const [activeQuery, setActiveQuery] = useState('')
 
@@ -20,9 +22,9 @@ export function SearchPage() {
 
   return (
     <div className="library-page">
-      <h1>Search TV shows</h1>
+      <h1>{t('search.title')}</h1>
       <p>
-        <Link to="/library">← Back to library</Link>
+        <Link to="/library">{t('backToLibrary')}</Link>
       </p>
 
       <form className="library-search" onSubmit={handleSearch}>
@@ -30,20 +32,20 @@ export function SearchPage() {
           type="search"
           value={searchInput}
           onChange={(event) => setSearchInput(event.target.value)}
-          placeholder="Search TVmaze for shows…"
-          aria-label="Search shows"
+          placeholder={t('search.placeholder')}
+          aria-label={t('search.ariaLabel')}
         />
-        <button type="submit">Search</button>
+        <button type="submit">{t('search.submit')}</button>
       </form>
 
       {activeQuery.length >= 2 && (
         <section className="library-section">
-          <h2>Search results</h2>
-          {search.isLoading && <p>Searching…</p>}
+          <h2>{t('search.results')}</h2>
+          {search.isLoading && <p>{t('search.searching')}</p>}
           {search.error && (
-            <p className="library-error">{getErrorMessage(search.error, 'Search failed')}</p>
+            <p className="library-error">{getErrorMessage(search.error, t('search.failed'))}</p>
           )}
-          {search.data?.length === 0 && !search.isLoading && <p>No shows found.</p>}
+          {search.data?.length === 0 && !search.isLoading && <p>{t('search.noResults')}</p>}
           <ul className="library-list">
             {search.data?.map((show: ShowSearchResult) => (
               <li key={show.tvmazeId} className="library-card">
@@ -59,10 +61,12 @@ export function SearchPage() {
                       disabled={addShow.isPending && addShow.variables === show.tvmazeId}
                       onClick={() => addShow.mutate(show.tvmazeId)}
                     >
-                      Add to library
+                      {t('search.addToLibrary')}
                     </button>
                     {addShow.error && addShow.variables === show.tvmazeId && (
-                      <p className="library-error">{getErrorMessage(addShow.error, 'Add failed')}</p>
+                      <p className="library-error">
+                        {getErrorMessage(addShow.error, t('search.addFailed'))}
+                      </p>
                     )}
                   </div>
                 </div>

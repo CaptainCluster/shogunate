@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import type { Review, ReviewTargetType } from '../../../api/reviewApi'
 import { isValidRating } from '../../../components/starRatingUtils'
 import { StarRatingInput } from '../../../components/StarRatingInput'
@@ -32,6 +33,7 @@ function ReviewEditorForm({
   compact = false,
   collapseExistingReview = false,
 }: ReviewEditorFormProps) {
+  const { t } = useTranslation('reviews')
   const mutations = useReviewMutations(targetType, targetId)
   const [rating, setRating] = useState<number | null>(review?.rating ?? null)
   const [body, setBody] = useState(review?.body ?? '')
@@ -78,14 +80,14 @@ function ReviewEditorForm({
           value={rating}
           onChange={setRating}
           disabled={mutations.isPending}
-          label={label ?? 'Rating'}
+          label={label ?? t('rating')}
         />
         {canCollapseExisting && (
           <button
             type="button"
             className={`review-editor__expand${detailsExpanded ? ' review-editor__expand--open' : ''}`}
             aria-expanded={detailsExpanded}
-            aria-label={detailsExpanded ? 'Hide review details' : 'Show review details'}
+            aria-label={detailsExpanded ? t('hideDetails') : t('showDetails')}
             disabled={mutations.isPending}
             onClick={() => setDetailsExpanded((open) => !open)}
           >
@@ -96,7 +98,7 @@ function ReviewEditorForm({
       {showReviewDetails && (
         <>
           <label className="review-editor__label" htmlFor={fieldId}>
-            {compact ? 'Review' : 'Review text'}
+            {compact ? t('review') : t('reviewText')}
           </label>
           <textarea
             id={fieldId}
@@ -104,7 +106,7 @@ function ReviewEditorForm({
             value={body}
             disabled={mutations.isPending}
             rows={compact ? 2 : 3}
-            placeholder={compact ? 'Write a review…' : undefined}
+            placeholder={compact ? t('placeholder') : undefined}
             onChange={(event) => setBody(event.target.value)}
           />
           <div className="review-editor__actions">
@@ -113,7 +115,7 @@ function ReviewEditorForm({
               disabled={mutations.isPending || !isValidRating(rating)}
               onClick={handleSave}
             >
-              Save review
+              {t('saveReview')}
             </button>
             {review && (
               <button
@@ -122,7 +124,7 @@ function ReviewEditorForm({
                 disabled={mutations.isPending}
                 onClick={handleDelete}
               >
-                Delete review
+                {t('deleteReview')}
               </button>
             )}
           </div>
@@ -130,7 +132,7 @@ function ReviewEditorForm({
       )}
       {mutations.error && (
         <p className="library-error review-error">
-          {getErrorMessage(mutations.error, 'Review update failed')}
+          {getErrorMessage(mutations.error, t('updateFailed'))}
         </p>
       )}
     </div>
@@ -144,16 +146,17 @@ export function ReviewEditor({
   compact = false,
   collapseExistingReview = false,
 }: ReviewEditorProps) {
+  const { t } = useTranslation('reviews')
   const review = useReview(targetType, targetId)
 
   if (review.isLoading) {
-    return <p className="review-loading">Loading review…</p>
+    return <p className="review-loading">{t('loading')}</p>
   }
 
   if (review.error) {
     return (
       <p className="library-error review-error">
-        {getErrorMessage(review.error, 'Failed to load review')}
+        {getErrorMessage(review.error, t('loadFailed'))}
       </p>
     )
   }

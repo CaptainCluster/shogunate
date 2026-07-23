@@ -1,22 +1,24 @@
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getErrorMessage } from '../../../lib/getErrorMessage'
 import { formatDuration, formatUtcDateTime } from '../formatDuration'
 import { useLongestToWatch } from '../hooks/useAnalytics'
 
 export function LongestToWatchSection() {
+  const { t } = useTranslation('analytics')
   const longest = useLongestToWatch()
 
   return (
     <section className="analytics-section">
-      <h2>Longest time to watch</h2>
-      {longest.isLoading && <p>Loading ranking…</p>}
+      <h2>{t('longestToWatch.title')}</h2>
+      {longest.isLoading && <p>{t('longestToWatch.loading')}</p>}
       {longest.error && (
         <p className="analytics-error">
-          {getErrorMessage(longest.error, 'Failed to load longest-to-watch ranking')}
+          {getErrorMessage(longest.error, t('longestToWatch.loadFailed'))}
         </p>
       )}
       {longest.data?.length === 0 && !longest.isLoading && (
-        <p>No shows with watch history yet.</p>
+        <p>{t('longestToWatch.empty')}</p>
       )}
       {longest.data && longest.data.length > 0 && (
         <ol className="analytics-ranked-list">

@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import { getStarFill, isValidRating, ratingFromStarClick } from './starRatingUtils'
 import './starRating.css'
 
@@ -13,8 +14,11 @@ export function StarRatingInput({
   value,
   onChange,
   disabled = false,
-  label = 'Rating',
+  label,
 }: StarRatingInputProps) {
+  const { t } = useTranslation('reviews')
+  const resolvedLabel = label ?? t('rating')
+
   const handleKeyDown = useCallback(
     (event: React.KeyboardEvent) => {
       if (disabled) {
@@ -42,7 +46,7 @@ export function StarRatingInput({
       aria-valuemin={1}
       aria-valuemax={5}
       aria-valuenow={isValidRating(value) ? value : undefined}
-      aria-label={label}
+      aria-label={resolvedLabel}
       aria-disabled={disabled}
       onKeyDown={handleKeyDown}
     >
@@ -55,14 +59,14 @@ export function StarRatingInput({
               type="button"
               className="star-rating__half star-rating__half--left"
               disabled={disabled}
-              aria-label={`Set ${starIndex} stars`}
+              aria-label={t('setStars', { count: starIndex })}
               onClick={() => onChange(ratingFromStarClick(starIndex, 'left'))}
             />
             <button
               type="button"
               className="star-rating__half star-rating__half--right"
               disabled={disabled}
-              aria-label={`Set ${starIndex} and a half stars`}
+              aria-label={t('setHalfStars', { count: starIndex })}
               onClick={() => onChange(ratingFromStarClick(starIndex, 'right'))}
             />
             <span className={`star-rating__star star-rating__star--${fill}`} aria-hidden>

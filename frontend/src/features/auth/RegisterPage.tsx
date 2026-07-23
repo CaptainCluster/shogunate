@@ -1,11 +1,13 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getErrorMessage } from '../../lib/getErrorMessage'
 import { useRegister } from './hooks/useRegister'
 import './auth.css'
 
 export function RegisterPage() {
+  const { t } = useTranslation('auth')
   const navigate = useNavigate()
   const registerMutation = useRegister()
   const [username, setUsername] = useState('')
@@ -19,16 +21,16 @@ export function RegisterPage() {
       await registerMutation.mutateAsync({ username, password })
       navigate('/login')
     } catch (err) {
-      setError(getErrorMessage(err, 'Registration failed'))
+      setError(getErrorMessage(err, t('register.failed')))
     }
   }
 
   return (
     <section className="auth-page">
-      <h1>Create account</h1>
+      <h1>{t('register.title')}</h1>
       <form className="auth-form" onSubmit={handleSubmit}>
         <label>
-          Username
+          {t('register.username')}
           <input
             type="text"
             value={username}
@@ -40,7 +42,7 @@ export function RegisterPage() {
           />
         </label>
         <label>
-          Password
+          {t('register.password')}
           <input
             type="password"
             value={password}
@@ -51,11 +53,11 @@ export function RegisterPage() {
         </label>
         {error && <p className="auth-error">{error}</p>}
         <button type="submit" disabled={registerMutation.isPending}>
-          Register
+          {t('register.submit')}
         </button>
       </form>
       <div className="auth-links">
-        <Link to="/login">Already have an account? Log in</Link>
+        <Link to="/login">{t('register.hasAccount')}</Link>
       </div>
     </section>
   )

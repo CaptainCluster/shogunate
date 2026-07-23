@@ -1,0 +1,24 @@
+.language-switch {
+  display: inline-flex;
+  border: 1px solid #444;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.language-switch__btn {
+  padding: 0.25rem 0.5rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.language-switch__btn--active {
+  background: #444;
+  font-weight: 600;
+}
+
+.language-switch__btn:hover:not(.language-switch__btn--active) {
+  background: #333;
+}

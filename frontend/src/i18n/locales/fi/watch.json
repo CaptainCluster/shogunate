@@ -1,0 +1,18 @@
+{
+  "markWatched": "Merkitse katsotuksi",
+  "unmark": "Poista merkintä",
+  "watchedAt": "Katsottu {{date}}",
+  "markAriaLabel": "Merkitse {{label}} katsotuksi",
+  "unmarkAriaLabel": "Poista {{label}} katsotu merkintä",
+  "seasonProgress": "{{watched}}/{{total}} jaksoa katsottu",
+  "unmarkSeason": {
+    "title": "Poistetaanko kauden merkintä?",
+    "message": "Poistetaanko tämän kauden ja kaikkien {{episodeCount}} jakson katsotu merkinnät?",
+    "confirm": "Poista merkintä"
+  },
+  "unmarkShow": {
+    "title": "Poistetaanko sarjan merkintä?",
+    "message": "Poistetaanko tämän sarjan ja kaikkien {{seasonCount}} kauden ({{episodeCount}} jaksoa) katsotu merkinnät?",
+    "confirm": "Poista merkintä"
+  }
+}

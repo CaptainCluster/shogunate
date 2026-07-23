@@ -1,0 +1,16 @@
+{
+  "rating": "Rating",
+  "review": "Review",
+  "reviewText": "Review text",
+  "placeholder": "Write a review…",
+  "saveReview": "Save review",
+  "deleteReview": "Delete review",
+  "showDetails": "Show review details",
+  "hideDetails": "Hide review details",
+  "loading": "Loading review…",
+  "loadFailed": "Failed to load review",
+  "updateFailed": "Review update failed",
+  "setStars": "Set {{count}} stars",
+  "setHalfStars": "Set {{count}} and a half stars",
+  "starRating": "Star rating"
+}

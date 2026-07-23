@@ -1,0 +1,15 @@
+{
+  "loading": "Ladataan suosikkeja…",
+  "loadStatusFailed": "Suosikin tilan lataus epäonnistui",
+  "updateFailed": "Suosikin päivitys epäonnistui",
+  "suggestedBadge": "Ehdotettu suosikki",
+  "suggestedBadgeAria": "Ehdotettu suosikki",
+  "addToFavorites": "Lisää suosikkeihin",
+  "removeFromFavorites": "Poista suosikeista",
+  "addFailed": "Lisäys epäonnistui",
+  "suggestions": {
+    "title": "Ehdotetut suosikit",
+    "loadFailed": "Ehdotusten lataus epäonnistui",
+    "description": "Perustuu korkeimmin arvioimiisi sarjoihin ja kausiin. Lisää suosikkeihin ne, jotka haluat säilyttää."
+  }
+}

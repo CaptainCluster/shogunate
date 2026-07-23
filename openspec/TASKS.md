@@ -207,23 +207,23 @@ Checkboxes track phase-level progress. When an OpenSpec change completes and is 
 
 ## Phase 6: Analytics
 
-- [ ] **6.1 — Watch-counts-by-period query (backend)**
+- [x] **6.1 — Watch-counts-by-period query (backend)**
   `GET /api/analytics/watch-counts?period=&from=&to=`, grouped by target type, sourced from `watch_events`.
   *Ref: PRD §5.6; Architecture §6*
 
-- [ ] **6.2 — Longest-time-to-watch query (backend)**
+- [x] **6.2 — Longest-time-to-watch query (backend)**
   `GET /api/analytics/longest-to-watch` — per-show `MAX(occurred_at) - MIN(occurred_at)` over watched episode events, ranked descending.
   *Ref: PRD §5.6; Architecture §6*
 
-- [ ] **6.3 — Totals + favorites endpoints (backend)**
+- [x] **6.3 — Totals + favorites endpoints (backend)**
   `GET /api/analytics/totals`, `GET /api/analytics/favorites` (thin wrapper over Phase 5 logic for dashboard consumption).
   *Ref: PRD §5.6*
 
-- [ ] **6.4 — Analytics dashboard (frontend)**
+- [x] **6.4 — Analytics dashboard (frontend)**
   Charts/lists for favorites, watch counts by period, longest-to-watch ranking, totals.
   *Ref: PRD §5.6; Architecture §7.1*
 
-- [ ] **6.5 — Tests**
+- [x] **6.5 — Tests**
   Unit tests for each analytics calculation, using seeded `watch_events` fixtures covering edge cases (single-episode shows, shows with only cascade-triggered events, empty history).
   *Ref: Architecture §8.3*
 

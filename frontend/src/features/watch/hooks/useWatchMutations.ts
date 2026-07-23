@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import * as watchApi from '../../../api/watchApi'
+import { invalidateAllAnalyticsQueries } from '../../analytics/hooks/useAnalytics'
 import { showKeys } from '../../library/showKeys'
 import type { WatchTargetType } from '../watchKeys'
 
@@ -16,6 +17,7 @@ export function useWatchMutations(showId: string) {
     return Promise.all([
       queryClient.invalidateQueries({ queryKey: showKeys.detail(showId) }),
       queryClient.invalidateQueries({ queryKey: showKeys.library() }),
+      invalidateAllAnalyticsQueries(queryClient),
     ])
   }
 

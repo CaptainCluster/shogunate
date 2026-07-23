@@ -16,6 +16,7 @@ export function Layout() {
           <Link to="/">Home</Link>
           {user && <Link to="/library">Library</Link>}
           {user && <Link to="/search">Search</Link>}
+          {user && <Link to="/analytics">Analytics</Link>}
           <Link to="/about">About</Link>
           {user ? (
             <>

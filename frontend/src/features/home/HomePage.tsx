@@ -15,6 +15,8 @@ export function HomePage() {
             <Link to="/library">Browse your library</Link>
             {' · '}
             <Link to="/search">Search for shows</Link>
+            {' · '}
+            <Link to="/analytics">View analytics</Link>
           </p>
           <button type="button" onClick={logout}>
             Log out

@@ -43,7 +43,7 @@
 }
 
 .star-rating__star-bg {
-  color: var(--border);
+  color: color-mix(in srgb, var(--text-h) 28%, var(--border));
 }
 
 .star-rating__star-fill {

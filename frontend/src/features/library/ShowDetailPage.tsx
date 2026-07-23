@@ -78,17 +78,47 @@ export function ShowDetailPage() {
       </div>
 
       <section className="library-detail-actions" aria-label={t('detail.actionsAria')}>
-        <div className="show-watch-controls">
-          <WatchButtonPair
-            targetType="SHOW"
-            targetId={data.id}
-            watched={data.watched}
-            watchedAt={data.watchedAt}
-            label={data.title}
-            episodeCount={totalEpisodes}
-            seasonCount={seasonCount}
-            mutations={mutationProps}
-          />
+        <div className="library-detail-watch-row">
+          <div className="library-detail-watch-row__controls">
+            <WatchButtonPair
+              targetType="SHOW"
+              targetId={data.id}
+              watched={data.watched}
+              watchedAt={data.watchedAt}
+              label={data.title}
+              episodeCount={totalEpisodes}
+              seasonCount={seasonCount}
+              mutations={mutationProps}
+            />
+          </div>
+          <div className="library-detail-watch-row__status">
+            <span className="library-detail-status__label" id="library-status-label">
+              {t('detail.libraryStatus')}
+            </span>
+            {data.libraryStatus === 'WATCHED' ? (
+              <span
+                id="library-status"
+                className="library-detail-status__value library-detail-status__value--watched"
+                aria-labelledby="library-status-label"
+              >
+                {formatLibraryStatus(data.libraryStatus)}
+              </span>
+            ) : (
+              <select
+                id="library-status"
+                className="ui-select library-detail-status__select"
+                aria-labelledby="library-status-label"
+                value={data.libraryStatus}
+                disabled={watchMutations.isPending || updateStatus.isPending}
+                onChange={(event) =>
+                  updateStatus.mutate(event.target.value as 'NONE' | 'PLAN_TO_WATCH')
+                }
+              >
+                <option value="NONE">{formatLibraryStatus('NONE')}</option>
+                <option value="PLAN_TO_WATCH">{formatLibraryStatus('PLAN_TO_WATCH')}</option>
+              </select>
+            )}
+          </div>
         </div>
         {watchMutations.error && (
           <p className="library-error watch-error">
@@ -103,25 +133,6 @@ export function ShowDetailPage() {
           targetId={data.id}
           label={t('detail.rateShow', { title: data.title })}
         />
-        <label className="library-detail-status" htmlFor="library-status">
-          {t('detail.libraryStatus')}
-          {data.libraryStatus === 'WATCHED' ? (
-            <span id="library-status">{formatLibraryStatus(data.libraryStatus)}</span>
-          ) : (
-            <select
-              id="library-status"
-              className="ui-select"
-              value={data.libraryStatus}
-              disabled={watchMutations.isPending || updateStatus.isPending}
-              onChange={(event) =>
-                updateStatus.mutate(event.target.value as 'NONE' | 'PLAN_TO_WATCH')
-              }
-            >
-              <option value="NONE">{formatLibraryStatus('NONE')}</option>
-              <option value="PLAN_TO_WATCH">{formatLibraryStatus('PLAN_TO_WATCH')}</option>
-            </select>
-          )}
-        </label>
         <RemoveFromLibraryButton
           showId={id}
           showTitle={data.title}

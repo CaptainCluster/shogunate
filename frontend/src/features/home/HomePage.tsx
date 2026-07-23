@@ -24,12 +24,10 @@ export function HomePage() {
             <Link to="/analytics" className="ui-button ui-button--ghost">
               {t('home.viewAnalytics')}
             </Link>
-          </div>
-          <p className="home-page__actions">
             <button type="button" className="ui-button ui-button--ghost" onClick={logout}>
               {t('nav.logout')}
             </button>
-          </p>
+          </div>
         </div>
       ) : (
         <p className="home-page__guest">

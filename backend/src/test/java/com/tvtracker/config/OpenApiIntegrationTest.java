@@ -62,6 +62,20 @@ class OpenApiIntegrationTest {
                 .andExpect(jsonPath("$.paths['/api/favorites'].post.summary")
                         .value("Add a show to the authenticated user's favorites"))
                 .andExpect(jsonPath("$.paths['/api/favorites/{showId}'].delete.summary")
-                        .value("Remove a show from the authenticated user's favorites"));
+                        .value("Remove a show from the authenticated user's favorites"))
+                .andExpect(jsonPath("$.paths['/api/analytics/watch-counts'].get.summary")
+                        .value("Get WATCHED event counts by target type for a resolved time period"))
+                .andExpect(jsonPath("$.paths['/api/analytics/longest-to-watch'].get.summary")
+                        .value("Get shows ranked by elapsed time between first and last watched episode"))
+                .andExpect(jsonPath("$.paths['/api/analytics/totals'].get.summary")
+                        .value("Get all-time WATCHED event counts grouped by target type"))
+                .andExpect(jsonPath("$.paths['/api/analytics/favorites'].get.summary")
+                        .value("Get the authenticated user's explicitly favorited shows for analytics"))
+                .andExpect(jsonPath("$.paths['/api/analytics/watch-streaks'].get.summary")
+                        .value("Get current and longest consecutive-day watch streaks from the event log"))
+                .andExpect(jsonPath("$.paths['/api/analytics/library-completion'].get.summary")
+                        .value("Get per-show and overall episode completion percentages for the library"))
+                .andExpect(jsonPath("$.paths['/api/analytics/plan-to-watch-count'].get.summary")
+                        .value("Get the count of library shows flagged as plan to watch"));
     }
 }

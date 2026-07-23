@@ -20,4 +20,6 @@ public interface UserLibraryRepository extends JpaRepository<UserLibrary, UUID> 
     boolean existsByUserIdAndTvmazeId(@Param("userId") UUID userId, @Param("tvmazeId") int tvmazeId);
 
     long countByShowId(UUID showId);
+
+    long countByUserIdAndLibraryStatus(UUID userId, LibraryStatus libraryStatus);
 }

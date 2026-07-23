@@ -37,4 +37,4 @@
 
 ## 6. Archive
 
-- [ ] 6.1 Archive change via `/opsx:archive`; add Phase **7.6 — Frontend UI refinement** to `openspec/TASKS.md` and check it off
+- [x] 6.1 Archive change via `/opsx:archive`; add Phase **7.6 — Frontend UI refinement** to `openspec/TASKS.md` and check it off
